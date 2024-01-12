@@ -1,12 +1,16 @@
 {
   "name": "pildoras-saber",
   "version": "0.0.0",
+  "main": "electron-main.js",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "electron": "electron .",
+    "electron-build": "ng build && electron .",
+    "winpack": "electron-packager ./ pildoras_saber --platform-win32 --overwrite"
   },
   "private": true,
   "dependencies": {
@@ -27,6 +31,9 @@
     "@angular/cli": "^16.2.4",
     "@angular/compiler-cli": "^16.2.0",
     "@types/jasmine": "~4.3.0",
+    "electron": "^28.1.3",
+    "electron-builder": "^24.9.1",
+    "electron-packager": "^17.1.2",
     "jasmine-core": "~4.6.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
