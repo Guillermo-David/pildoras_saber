@@ -1,16 +1,23 @@
 {
   "name": "pildoras-saber",
   "version": "0.0.0",
-  "main": "electron-main.js",
+  "main": "electron-main.ts",
+  "type": "module",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "concurrently \"ng serve\" \"npm run start-server\"",
+    "build-server": "tsc --project ./",
+    "start-server": "npm run build-server && node ./dist/server/server.js",
+    "start-server-0": "ts-node ./server/server.ts",
+    "start-server-2": "node --loader ts-node/esm ./server/server.ts",
+    "start-server-3": "ts-node --esm ./server/server.ts",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "electron": "electron .",
     "electron-build": "ng build && electron .",
-    "winpack": "electron-packager ./ pildoras_saber --platform-win32 --overwrite"
+    "winpack": "electron-packager ./ pildoras_saber --platform-win32 --overwrite",
+    "init-db": "ts-node ./server/init-db.ts"
   },
   "private": true,
   "dependencies": {
@@ -22,7 +29,11 @@
     "@angular/platform-browser": "^16.2.0",
     "@angular/platform-browser-dynamic": "^16.2.0",
     "@angular/router": "^16.2.0",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
     "rxjs": "~7.8.0",
+    "sqlite3": "^5.1.7",
     "tslib": "^2.3.0",
     "zone.js": "~0.13.0"
   },
@@ -31,6 +42,7 @@
     "@angular/cli": "^16.2.4",
     "@angular/compiler-cli": "^16.2.0",
     "@types/jasmine": "~4.3.0",
+    "concurrently": "^8.2.2",
     "electron": "^28.1.3",
     "electron-builder": "^24.9.1",
     "electron-packager": "^17.1.2",
@@ -40,6 +52,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "ts-node": "^10.9.2",
     "typescript": "~5.1.3"
   }
 }
