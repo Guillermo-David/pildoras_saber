@@ -2,7 +2,7 @@
   "name": "pildoras-saber",
   "version": "0.0.0",
   "main": "electron-main.ts",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "ng": "ng",
     "start": "concurrently \"ng serve\" \"npm run start-server\"",

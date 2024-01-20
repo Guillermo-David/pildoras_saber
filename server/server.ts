@@ -16,7 +16,10 @@ app.use('/api/etiquetas', etiquetasController);
 app.use('/api/secuencias', secuenciasController);
 
 export const start = () => {
+    console.log("iniciando servidor");
     app.listen(port, () => {
         console.log(`Servidor corriendo en http://localhost:${port}`);
     });
 };
+
+start();
