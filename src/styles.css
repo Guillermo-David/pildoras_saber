@@ -1,1 +1,33 @@
 /* You can add global styles to this file, and also import other style files */
+/* En styles.css o styles.scss */
+@import 'primeng/resources/themes/saga-blue/theme.css';
+/* o el tema que prefieras */
+@import 'primeng/resources/primeng.min.css';
+@import 'primeicons/primeicons.css';
+
+:root {
+    --color-primary-0: #DFBFC8;
+    --color-primary-1: #BDB1B5;
+    --color-primary-2: #AE9BA1;
+    --color-primary-3: #9D848B;
+    --color-primary-4: #8F7079;
+}
+
+label {
+    display: flex;
+    /* border: 1px solid var(--color-primary-2); */
+    /* border-radius: 5px; */
+    width: 100px;
+    height: 40px;
+    align-items: center;
+    padding-left: 8px;
+    margin-right: 5px;
+}
+
+th input {
+    margin-left: 8px;
+}
+
+button {
+    height: 40px;
+}

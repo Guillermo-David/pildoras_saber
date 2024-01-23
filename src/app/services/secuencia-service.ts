@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Secuencia } from '../models/secuencia';
+import { PagedResponse } from '../interfaces/paged-response';
 
 @Injectable({
   providedIn: 'root'
@@ -11,14 +12,19 @@ export class SecuenciaService {
 
   constructor(private http: HttpClient) { }
 
-  getSecuencias(limit?: number, offset?: number, orderBy?: string, orderDirection?: 'ASC' | 'DESC'): Observable<Secuencia[]> {
-    const params = new HttpParams()
-      .set('limit', limit ? limit.toString() : '')
-      .set('offset', offset ? offset.toString() : '')
-      .set('orderBy', orderBy ? orderBy : '')
-      .set('orderDirection', orderDirection ? orderDirection : '');
-  
-    return this.http.get<Secuencia[]>(this.apiUrl, { params });
+  getSecuencias(page: number, size: number, sort: string, order: string, filters: { [key: string]: string }): Observable<PagedResponse> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sort', sort)
+      .set('order', order);
+
+    // Aplicar los filtros activos
+    Object.keys(filters).forEach(key => {
+      params = params.set(key, filters[key]);
+    });
+
+    return this.http.get<PagedResponse>(this.apiUrl, { params });
   }
   
 

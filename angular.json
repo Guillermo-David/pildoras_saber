@@ -60,10 +60,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "pildoras_saber:build:production"
+              "buildTarget": "pildoras_saber:build:production"
             },
             "development": {
-              "browserTarget": "pildoras_saber:build:development"
+              "buildTarget": "pildoras_saber:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -71,7 +71,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "pildoras_saber:build"
+            "buildTarget": "pildoras_saber:build"
           }
         },
         "test": {

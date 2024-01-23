@@ -11,31 +11,71 @@ const db = new sqlite3.Database('./pildoras.db', sqlite3.OPEN_READWRITE, (err) =
 
 // GET: Obtener todas las etiquetas
 router.get('/', (req, res) => {
-    const limit = req.query['limit'] ? parseInt(req.query['limit'].toString()) : 10; // Default 10
-    const offset = req.query['offset'] ? parseInt(req.query['offset'].toString()) : 0; // Default 0
-    const orderBy = typeof req.query['orderBy'] === 'string' ? req.query['orderBy'] : 'nombre'; // Default 'nombre'
-    const orderDirection = req.query['orderDirection'] === 'DESC' ? 'DESC' : 'ASC'; // Default 'ASC'
+    const size = req.query['size'] ? parseInt(req.query['size'].toString()) : 10; // Default 10
+    const page = req.query['page'] ? parseInt(req.query['page'].toString()) : 0; // Default 0
+    const offset = page * size;
+    const orderBy = typeof req.query['sort'] === 'string' ? req.query['sort'] : 'id'; // Default 'id'
+    const orderDirection = req.query['order'] === 'DESC' ? 'DESC' : 'ASC'; // Default 'ASC'
     const nombre = typeof req.query['nombre'] === 'string' ? req.query['nombre'] : null;
 
-    let sql = `SELECT * FROM Etiqueta E`;
-    
-    const params = [];
-    if(nombre) {
-        sql += ` WHERE E.nombre LIKE ?`;
+    let baseSql = `FROM Etiqueta E`;
+    const params: (string | number)[] = [];
+    if (nombre) {
+        baseSql += ` WHERE E.nombre LIKE ?`;
         params.push(`%${nombre}%`);
     }
 
-    sql += `ORDER BY ${orderBy} ${orderDirection} LIMIT ? OFFSET ?`;
-    params.push(limit, offset);
-
-    db.all(sql, params, (err, rows) => {
+    // Consulta para obtener el total de registros
+    let countSql = `SELECT COUNT(*) as total ${baseSql}`;
+    
+    // Primero, obtener el total de registros
+    db.get(countSql, params, (err, countResult: CountResult) => {
         if (err) {
             res.status(400).json({ "error": err.message });
             return;
         }
-        res.json(rows);
+        
+        const total = countResult.total;
+        let dataSql = `SELECT * ${baseSql}`;
+
+        if (size !== -1) {
+            const offset = page * size;
+            dataSql += ` ORDER BY ${orderBy} ${orderDirection} LIMIT ? OFFSET ?`;
+            params.push(size, offset);
+        } else {
+            dataSql += ` ORDER BY ${orderBy} ${orderDirection}`;
+        }
+
+        db.all(dataSql, params, (err, rows) => {
+            if (err) {
+                res.status(400).json({ "error": err.message });
+                return;
+            }
+
+            // Enviar la respuesta paginada
+            res.json({
+                content: rows,
+                pageable: size !== -1 ? {
+                    pageNumber: offset / size,
+                    pageSize: size,
+                    offset: offset,
+                    sort: { empty: false, sorted: true, unsorted: false },
+                    paged: true,
+                    unpaged: false
+                } : null,
+                last: size !== -1 ? (page + 1) * size >= total : true,
+                totalPages: size !== -1 ? Math.ceil(total / size) : 1,
+                size: size,
+                number: offset / size,
+                sort: { empty: false, sorted: true, unsorted: false },
+                first: size !== -1 ? page === 0 : true,
+                numberOfElements: rows.length,
+                empty: rows.length === 0
+            });
+        });
     });
 });
+
 
 // GET: Obtener una etiqueta por ID
 router.get('/:id', (req, res) => {

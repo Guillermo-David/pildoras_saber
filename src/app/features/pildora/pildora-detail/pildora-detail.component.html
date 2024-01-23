@@ -1,1 +1,25 @@
-<p>pildora-detail works!</p>
+<!-- <form [formGroup]="pildoraForm" (ngSubmit)="onSubmit()"> -->
+    <div>
+        <!-- Campo de texto para el título -->
+        <div class="p-field">
+            <label for="titulo">Título</label>
+            <input pInputText type="text" id="titulo" [(ngModel)]="newPildoraTitulo" placeholder="Introduce el título" />
+        </div>
+        
+        <!-- Dropdown para seleccionar etiqueta -->
+        <div class="p-field">
+            <label for="etiqueta">Etiqueta</label>
+            <p-multiSelect class="p-component" [options]="etiquetas" [(ngModel)]="newPildoraEtiquetas" optionLabel="nombre" display="chip" defaultLabel="Selecciona tipos"></p-multiSelect>
+        </div>
+        
+        <!-- Área de texto para el contenido -->
+        <div class="p-field">
+            <label for="contenido">Contenido</label>
+            <textarea pInputTextArea type="text" id="contenido" [(ngModel)]="newPildoraContenido" rows="25"></textarea>
+        </div>
+        
+        <!-- Botón para guardar -->
+        <p-button type="submit" label="Guardar"></p-button>
+    </div>
+  <!-- </form> -->
+  
