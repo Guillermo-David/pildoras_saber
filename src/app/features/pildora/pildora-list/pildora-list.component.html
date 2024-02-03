@@ -1,104 +1,43 @@
-<p-toast position="top-right"></p-toast>
-<p-breadcrumb class="max-w-full" [model]="items" [home]="home"></p-breadcrumb>
-<p-card header="Píldoras" styleClass="ui-card-shadow">
-    <div class="table-and-form-container">
-        <div class="opciones-tabla-container">
-            <div class="clear-filters-container">
-                <!-- BOTON NUEVO -->
-                <p-button pButton pRipple type="button" class="p-button-text"
-                    (click)="onNewRowInit()" pTooltip="Añadir" [showDelay]="tooltipDelay" tooltipStyleClass="custom-tooltip">
-                    <i class="pi pi-plus"></i><span class="contenido-boton"></span>
-                </p-button>
-                <p-button pButton pRipple type="button" label="Limpiar Filtros" (click)="clearFilters()"
-                class="p-button-text"></p-button>
-            </div>
+<!-- <p-toast position="top-right"></p-toast>
+<p-breadcrumb class="max-w-full" [model]="items" [home]="home"></p-breadcrumb> -->
+<mat-card class="example-card"></mat-card>
+<mat-card-header>
+    <mat-card-title>Píldoras</mat-card-title>
+</mat-card-header>
+<div class="table-and-form-container">
+    <div class="opciones-tabla-container">
+        <div class="clear-filters-container">
+            <!-- BOTON NUEVO -->
+            <button mat-button (click)="onNewRowInit()" aria-label="Añadir">
+                <mat-icon>add</mat-icon><span class="contenido-boton"></span>
+            </button>
+            <button mat-button (click)="clearFilters()" aria-label="Limpiar Filtros">
+                Limpiar Filtros
+            </button>
         </div>
-
-
-        <!-- <br *ngIf="!editingId && isCreating" /> -->
-        <!-- BOTON GUARDAR NUEVO -->
-        <!-- <p-button #saveButtonNew *ngIf="!editingId && isCreating" pButton pRipple type="button"
-            (click)="onNewRowSave()" class="p-button-text" pTooltip="Guardar" [showDelay]="tooltipDelay"
-            tooltipStyleClass="custom-tooltip">
-            <i class="pi pi-check"></i>
-        </p-button> -->
-
-        <!-- BOTON CANCELAR NUEVO -->
-        <!-- <p-button *ngIf="!editingId && isCreating" pButton pRipple type="button" (click)="onNewRowCancel()"
-            class="p-button-text" pTooltip="Cancelar" [showDelay]="tooltipDelay" tooltipStyleClass="custom-tooltip">
-            <i class="pi pi-times"></i>
-        </p-button> -->
-
-        <p-table selectionMode="single" [value]="pildoras" dataKey="id" [resizableColumns]="true"
-            styleClass="p-datatable-striped" editMode="row" sortMode="single" sortField="titulo" [sortOrder]="1"
-            [lazy]="true" (onLazyLoad)="onSort($event)" [tableStyle]="{ 'min-width': '30%', width: '100%' }">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th pResizableColumn pSortableColumn="titulo" class="column-titulo">
-                        Titulo <p-sortIcon field="titulo"></p-sortIcon>
-                        <input #filtroTitulo pInputText (click)="$event.stopPropagation()" [(ngModel)]="textoInputsFiltros['titulo']"
-                            (input)="onFilter($event, 'titulo')" class="p-column-filter p-inputtext p-component">
-                    </th>
-                    <th pResizableColumn pSortableColumn="contenido" class="column-contenido">
-                        Contenido <p-sortIcon field="contenido"></p-sortIcon>
-                        <input #filtroContenido pInputText (click)="$event.stopPropagation()" [(ngModel)]="textoInputsFiltros['contenido']"
-                            (input)="onFilter($event, 'contenido')" class="p-column-filter p-inputtext p-component">
-                    </th>
-                    <th pResizableColumn pSortableColumn="etiquetas" class="column-etiquetas">
-                        Tags
-                        <input #filtroEtiqueta pInputText (click)="$event.stopPropagation()" [(ngModel)]="textoInputsFiltros['etiquetas']"
-                            (input)="onFilter($event, 'etiquetas')" class="p-column-filter p-inputtext p-component">
-                    </th>
-                    <!-- <th class="column-actions" pResizableColumn></th> -->
-                </tr>
-            </ng-template>
-
-            <ng-template pTemplate="body" let-rowData let-editing="editing" let-ri="rowIndex">
-                <tr [pEditableRow]="rowData">
-                    <td>
-                        <p-cellEditor>
-                            <ng-template pTemplate="input">
-                                <input pInputText type="text" [(ngModel)]="rowData.titulo"
-                                    class="p-inputtext p-component" />
-                            </ng-template>
-                            <ng-template pTemplate="output">
-                                {{ rowData.titulo }}
-                            </ng-template>
-                        </p-cellEditor>
-                    </td>
-                    <td>
-                        <p-cellEditor>
-                            <ng-template pTemplate="input">
-                                <input pInputText type="text" [(ngModel)]="rowData.contenido"
-                                    class="p-inputtext p-component" />
-                            </ng-template>
-                            <ng-template pTemplate="output">
-                                {{ rowData.contenido }}
-                            </ng-template>
-                        </p-cellEditor>
-                    </td>
-                    <td>
-                        <p-cellEditor>
-                            <ng-template pTemplate="input">
-                                <p-multiSelect [options]="etiquetas" [(ngModel)]="rowData.etiquetas"
-                                    optionLabel="nombre" display="chip" appendTo="body"></p-multiSelect>
-                            </ng-template>
-                            <ng-template pTemplate="output">
-                                {{ displayEtiquetas(rowData.etiquetas) }}
-                            </ng-template>
-                        </p-cellEditor>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
-
-        <!-- PAGINATOR -->
-        <div class="flex-auto">
-            <p-paginator (onPageChange)="onPageChange($event)" [first]="paging.firstIndex" [rows]="paging.size"
-                [totalRecords]="paging.totalRecords" [rowsPerPageOptions]="[10, 50, 100, 500]"
-                [showCurrentPageReport]="true"
-                currentPageReportTemplate="Mostrando {first}-{last}/{totalRecords} registros"></p-paginator>
-        </div>
-        <br />
     </div>
-</p-card>
+
+    <!-- Tabla Angular Material -->
+    <div class="mat-elevation-z8">
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+
+            <!-- Definiciones de Columnas -->
+            <ng-container matColumnDef="titulo">
+                <th mat-header-cell *matHeaderCellDef> Título </th>
+                <td mat-cell *matCellDef="let element"> {{element.titulo}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="contenido">
+                <th mat-header-cell *matHeaderCellDef> Contenido </th>
+                <td mat-cell *matCellDef="let element"> {{element.contenido}} </td>
+            </ng-container>
+
+            <!-- Header y Footer de la Tabla -->
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <mat-paginator [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons></mat-paginator>
+    </div>
+</div>
+</mat-card>
