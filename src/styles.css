@@ -1,9 +1,3 @@
-/* You can add global styles to this file, and also import other style files */
-/* En styles.css o styles.scss */
-@import 'primeng/resources/themes/saga-blue/theme.css';
-/* o el tema que prefieras */
-@import 'primeng/resources/primeng.min.css';
-@import 'primeicons/primeicons.css';
 
 :root {
     --color-primary-0: #DFBFC8;
@@ -31,3 +25,5 @@ th input {
 button {
     height: 40px;
 }
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

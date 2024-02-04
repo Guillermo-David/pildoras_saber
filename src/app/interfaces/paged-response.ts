@@ -1,28 +1,6 @@
 export interface PagedResponse {
-    content: any[];
-    pageable: {
-        pageNumber: number;
-        pageSize: number;
-        offset: number;
-        sort: {
-            empty: boolean;
-            sorted: boolean;
-            unsorted: boolean;
-        };
-        paged: boolean;
-        unpaged: boolean;
-    };
-    last: boolean;
-    totalElements: number;
-    totalPages: number;
-    size: number;
-    number: number;
-    sort: {
-        empty: boolean;
-        sorted: boolean;
-        unsorted: boolean;
-    };
-    first: boolean;
-    numberOfElements: number;
-    empty: boolean;
+    data: any[]; // Idealmente, sustituye any[] por un tipo específico, como Pildora[]
+    total: number;
+    page: number;
+    pageSize: number;
 }

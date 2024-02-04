@@ -1,43 +1,74 @@
 <!-- <p-toast position="top-right"></p-toast>
 <p-breadcrumb class="max-w-full" [model]="items" [home]="home"></p-breadcrumb> -->
-<mat-card class="example-card"></mat-card>
-<mat-card-header>
-    <mat-card-title>Píldoras</mat-card-title>
-</mat-card-header>
-<div class="table-and-form-container">
-    <div class="opciones-tabla-container">
-        <div class="clear-filters-container">
-            <!-- BOTON NUEVO -->
-            <button mat-button (click)="onNewRowInit()" aria-label="Añadir">
-                <mat-icon>add</mat-icon><span class="contenido-boton"></span>
-            </button>
-            <button mat-button (click)="clearFilters()" aria-label="Limpiar Filtros">
-                Limpiar Filtros
-            </button>
+<mat-card class="example-card">
+    <mat-card-header>
+        <mat-card-title>Píldoras</mat-card-title>
+    </mat-card-header>
+    <div class="table-and-form-container">
+        <div class="opciones-tabla-container">
+            <div class="clear-filters-container">
+                <!-- BOTON NUEVO -->
+                <button mat-button (click)="onNewRowInit()" aria-label="Añadir">
+                    <mat-icon>add</mat-icon><span class="contenido-boton"></span>
+                </button>
+                <button mat-button (click)="clearFilters()" aria-label="Limpiar Filtros">
+                    Limpiar Filtros
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabla Angular Material -->
+        <div class="mat-elevation-z8">
+            <table mat-table [dataSource]="pildoras" class="mat-elevation-z8">
+
+                <!-- Definiciones de Columnas -->
+                <ng-container matColumnDef="titulo">
+                    <th mat-header-cell *matHeaderCellDef> Titulo
+                        <mat-form-field appearance="fill">
+                            <!-- <mat-label>Filtrar por título</mat-label> -->
+                            <input matInput (keyup)="onKeyup($event)">
+                        </mat-form-field>
+                    </th>
+                    <td mat-cell *matCellDef="let element"> {{element.titulo}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="contenido">
+                    <th mat-header-cell *matHeaderCellDef> Contenido </th>
+                    <td mat-cell *matCellDef="let element"> {{element.contenido}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="pasoSecuencia">
+                    <th mat-header-cell *matHeaderCellDef> Paso Secuencia </th>
+                    <td mat-cell *matCellDef="let element"> {{element.pasoSecuencia}} </td>
+                </ng-container>
+                
+                <!-- <ng-container matColumnDef="idSecuencia">
+                    <th mat-header-cell *matHeaderCellDef> ID Secuencia </th>
+                    <td mat-cell *matCellDef="let element"> {{element.idSecuencia}} </td>
+                </ng-container> -->
+                
+                <ng-container matColumnDef="etiquetas">
+                    <th mat-header-cell *matHeaderCellDef> Etiqueta
+                        <mat-form-field appearance="fill">
+                            <!-- <mat-label>Filtrar por etiqueta</mat-label> -->
+                            <mat-select (selectionChange)="onFilter($event.value, 'etiquetas')">
+                                <mat-option *ngFor="let etiqueta of etiquetas" [value]="etiqueta.nombre">
+                                    {{etiqueta.nombre}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </th>
+                    <td mat-cell *matCellDef="let element">
+                        <span *ngFor="let etiqueta of element.etiquetas">{{ etiqueta.nombre }}</span>
+                    </td>
+                </ng-container>
+
+                <!-- Header y Footer de la Tabla -->
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+
+            <mat-paginator [pageSizeOptions]="[10, 50, 100]" (itemsPerPageLabel)='itemsPerPageLabel' showFirstLastButtons></mat-paginator>
         </div>
     </div>
-
-    <!-- Tabla Angular Material -->
-    <div class="mat-elevation-z8">
-        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
-
-            <!-- Definiciones de Columnas -->
-            <ng-container matColumnDef="titulo">
-                <th mat-header-cell *matHeaderCellDef> Título </th>
-                <td mat-cell *matCellDef="let element"> {{element.titulo}} </td>
-            </ng-container>
-
-            <ng-container matColumnDef="contenido">
-                <th mat-header-cell *matHeaderCellDef> Contenido </th>
-                <td mat-cell *matCellDef="let element"> {{element.contenido}} </td>
-            </ng-container>
-
-            <!-- Header y Footer de la Tabla -->
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
-
-        <mat-paginator [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons></mat-paginator>
-    </div>
-</div>
 </mat-card>

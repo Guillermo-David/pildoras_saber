@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Pildora {
+  id            Int       @id @default(autoincrement())
+  titulo        String
+  contenido     String
+  pasoSecuencia Int?
+  idSecuencia   Int?      @map("idSecuencia")
+  secuencia     Secuencia? @relation(fields: [idSecuencia], references: [id])
+  etiquetas     Etiqueta[] @relation("PildoraEtiquetas")
+}
+
+model Etiqueta {
+  id       Int       @id @default(autoincrement())
+  nombre   String
+  pildoras Pildora[] @relation("PildoraEtiquetas")
+}
+
+model Secuencia {
+  id       Int      @id @default(autoincrement())
+  nombre   String
+  pildoras Pildora[]
+}

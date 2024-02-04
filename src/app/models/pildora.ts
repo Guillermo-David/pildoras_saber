@@ -8,12 +8,4 @@ export class Pildora {
     pasoSecuencia?: number;
     etiquetas!: Etiqueta[];
 
-    // constructor(id: number, titulo: string, contenido: string, idSecuencia?: number, etiquetas?: Etiqueta[], pasoSecuencia?: number) {
-    //     this.id = id;
-    //     this.titulo = titulo;
-    //     this.contenido = contenido;
-    //     this.idSecuencia = idSecuencia;
-    //     this.etiquetas = etiquetas;
-    //     this.pasoSecuencia = pasoSecuencia;
-    // }
 }

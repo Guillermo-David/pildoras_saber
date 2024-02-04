@@ -1,334 +1,178 @@
 import * as express from 'express';
-import * as sqlite3 from 'sqlite3';
+import { Prisma, PrismaClient } from '@prisma/client';
 
+const prisma = new PrismaClient();
 const router = express.Router();
-const db = new sqlite3.Database('./pildoras.db', sqlite3.OPEN_READWRITE, (err) => {
-    if (err) {
-        console.error(err.message);
-    }
-    console.log('Conectado a la base de datos de píldoras.');
-});
 
-// GET: Obtener todas las píldoras
-router.get('/', (req, res) => {
-    const limit = req.query['limit'] ? parseInt(req.query['limit'].toString()) : 10; // Default 10
-    const offset = req.query['offset'] ? parseInt(req.query['offset'].toString()) : 0; // Default 0
-    const orderBy = typeof req.query['orderBy'] === 'string' ? req.query['orderBy'] : 'P.id'; // Default 'id'
-    const orderDirection = req.query['orderDirection'] === 'DESC' ? 'DESC' : 'ASC'; // Default 'ASC'
-    const titulo = typeof req.query['titulo'] === 'string' ? req.query['titulo'] : null;
-    const contenido = typeof req.query['contenido'] === 'string' ? req.query['contenido'] : null;
-    const nombreEtiqueta = typeof req.query['etiquetas'] === 'string' ? req.query['etiquetas'] : null;
+router.get('/', async (req, res) => {
+    const { page, size, sortBy, sortOrder, titulo, contenido, nombreEtiqueta } = req.query;
 
-    let baseSql = `FROM Pildora P 
-                   LEFT JOIN PildoraEtiqueta PE ON P.id = PE.idPildora 
-                   LEFT JOIN Etiqueta E ON PE.idEtiqueta = E.id`;
+    // Parsear parámetros de paginación
+    const pageNumber = parseInt(page as string) || 0;
+    const pageSize = parseInt(size as string) || 10;
 
-    const params: (string | number)[] = [];
-    let whereClauses = [];
+    // Parsear parámetros de ordenación
+    const orderBy = sortBy ? {
+        [sortBy as string]: sortOrder === 'desc' ? 'desc' : 'asc',
+    } : undefined;
 
-    if (titulo) {
-        whereClauses.push(`P.titulo LIKE ?`);
-        params.push(`%${titulo}%`);
-    }
+    // Construir condiciones de filtrado
+    let where: Prisma.PildoraWhereInput = {
+        titulo: titulo ? { contains: titulo as string } : undefined,
+        contenido: contenido ? { contains: contenido as string } : undefined,
+    };
 
-    if (contenido) {
-        whereClauses.push(`P.contenido LIKE ?`);
-        params.push(`%${contenido}%`);
-    }
-
+    // Filtrar por nombre de etiqueta, si se proporciona
     if (nombreEtiqueta) {
-        whereClauses.push(`E.nombre LIKE ?`);
-        params.push(`%${nombreEtiqueta}%`);
+        where = {
+            ...where,
+            etiquetas: {
+                some: {
+                    nombre: {
+                        contains: nombreEtiqueta as string,
+                    },
+                },
+            },
+        };
     }
 
-    if (whereClauses.length > 0) {
-        baseSql += ` WHERE ` + whereClauses.join(' AND ');
-    }
-
-    // Consulta para obtener el total de registros
-    let countSql = `SELECT COUNT(DISTINCT P.id) as total ${baseSql}`;
-
-    // Primero, obtener el total de registros
-    db.get(countSql, params, (err, countResult: { total: number }) => {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-
-        const total = countResult.total;
-
-        // Ahora, obtener los datos paginados de las píldoras
-        let dataSql = `SELECT P.id ${baseSql} 
-                       GROUP BY P.id 
-                       ORDER BY ${orderBy} ${orderDirection} 
-                       LIMIT ? OFFSET ?`;
-        db.all(dataSql, [...params, limit, offset], (err, pildoraRows: { id: number }[]) => {
-            if (err) {
-                res.status(400).json({ "error": err.message });
-                return;
-            }
-
-            // Si no hay píldoras, devolver respuesta vacía
-            if (pildoraRows.length === 0) {
-                res.json({ /* Objeto de respuesta vacío */ });
-                return;
-            }
-
-            // Obtener las etiquetas para las píldoras recuperadas
-            let pildoraIds = pildoraRows.map(p => p.id);
-            let etiquetasSql = `SELECT PE.idPildora, E.nombre 
-                                FROM PildoraEtiqueta PE 
-                                JOIN Etiqueta E ON PE.idEtiqueta = E.id 
-                                WHERE PE.idPildora IN (${pildoraIds.join(',')})`;
-
-            db.all(etiquetasSql, [], (err, etiquetasRows: { idPildora: number, nombre: string }[]) => {
-                if (err) {
-                    res.status(400).json({ "error": err.message });
-                    return;
-                }
-
-                // Combinar píldoras con sus etiquetas
-                let pildorasConEtiquetas = pildoraRows.map(pildora => ({
-                    id: pildora.id,
-                    etiquetas: etiquetasRows
-                        .filter(etiqueta => etiqueta.idPildora === pildora.id)
-                        .map(etiqueta => etiqueta.nombre)
-                }));
-
-                // Enviar la respuesta paginada
-                res.json({
-                    content: pildorasConEtiquetas,
-                    /* Propiedades adicionales de paginación y ordenación */
-                });
-            });
-        });
-    });
-});
-
-
-// router.get('/', (req, res) => {
-//     const limit = req.query['limit'] ? parseInt(req.query['limit'].toString()) : 10; // Default 10
-//     const offset = req.query['offset'] ? parseInt(req.query['offset'].toString()) : 0; // Default 0
-//     const orderBy = typeof req.query['orderBy'] === 'string' ? req.query['orderBy'] : 'id'; // Default 'id'
-//     const orderDirection = req.query['orderDirection'] === 'DESC' ? 'DESC' : 'ASC'; // Default 'ASC'
-//     const titulo = typeof req.query['titulo'] === 'string' ? req.query['titulo'] : null;
-//     const contenido = typeof req.query['contenido'] === 'string' ? req.query['contenido'] : null;
-//     const nombreEtiqueta = typeof req.query['etiquetas'] === 'string' ? req.query['etiquetas'] : null;
-
-//     let baseSql = `FROM Pildora P 
-//                    LEFT JOIN PildoraEtiqueta PE ON P.id = PE.idPildora 
-//                    LEFT JOIN Etiqueta E ON PE.idEtiqueta = E.id`;
-
-//     const params: (string | number)[] = [];
-//     let whereClauses = [];
-
-//     if (titulo) {
-//         whereClauses.push(`P.titulo LIKE ?`);
-//         params.push(`%${titulo}%`);
-//     }
-
-//     if (contenido) {
-//         whereClauses.push(`P.contenido LIKE ?`);
-//         params.push(`%${contenido}%`);
-//     }
-
-//     if (nombreEtiqueta) {
-//         whereClauses.push(`E.nombre LIKE ?`);
-//         params.push(`%${nombreEtiqueta}%`);
-//     }
-
-//     if (whereClauses.length > 0) {
-//         baseSql += ` WHERE ` + whereClauses.join(' AND ');
-//     }
-
-//     // Consulta para obtener el total de registros
-//     let countSql = `SELECT COUNT(*) as total ${baseSql}`;
-
-//     // Primero, obtener el total de registros
-//     db.get(countSql, params, (err, countResult: CountResult) => {
-//         if (err) {
-//             res.status(400).json({ "error": err.message });
-//             return;
-//         }
-
-//         const total = countResult.total;
-
-//         // Ahora, obtener los datos paginados
-//         let dataSql = `SELECT P.*, GROUP_CONCAT(E.nombre) as nombreEtiqueta 
-//                ${baseSql} 
-//                GROUP BY P.id 
-//                ORDER BY ${orderBy} ${orderDirection} 
-//                LIMIT ? OFFSET ?`;
-//         params.push(limit, offset);
-
-
-//         db.all(dataSql, params, (err, rows: PildoraRow[]) => {
-//             if (err) {
-//                 res.status(400).json({ "error": err.message });
-//                 return;
-//             }
-
-//             // Lógica para procesar las filas y obtener las píldoras
-//             const pildoras = rows.reduce((acc: { [key: number]: PildoraConEtiquetas }, row: PildoraRow) => {
-//                 // Si la píldora aún no está en el acumulador, la agregamos
-//                 if (!acc[row.id]) {
-//                     acc[row.id] = {
-//                         id: row.id,
-//                         titulo: row.titulo,
-//                         contenido: row.contenido,
-//                         idSecuencia: row.idSecuencia,
-//                         pasoSecuencia: row.pasoSecuencia,
-//                         etiquetas: []
-//                     };
-//                 }
-
-//                 // Agregar la etiqueta a la píldora, si existe
-//                 if (row.idEtiqueta && row.nombreEtiqueta) {
-//                     acc[row.id].etiquetas.push({
-//                         id: row.idEtiqueta,
-//                         nombre: row.nombreEtiqueta
-//                     });
-//                 }
-//                 return acc;
-//             }, {});
-
-//             // Enviar la respuesta paginada
-//             res.json({
-//                 content: Object.values(pildoras),
-//                 pageable: {
-//                     pageNumber: offset / limit,
-//                     pageSize: limit,
-//                     offset: offset,
-//                     sort: { empty: false, sorted: true, unsorted: false },
-//                     paged: true,
-//                     unpaged: false
-//                 },
-//                 last: offset + limit >= total,
-//                 totalElements: total,
-//                 totalPages: Math.ceil(total / limit),
-//                 size: limit,
-//                 number: offset / limit,
-//                 sort: { empty: false, sorted: true, unsorted: false },
-//                 first: offset === 0,
-//                 numberOfElements: rows.length,
-//                 empty: rows.length === 0
-//             });
-//         });
-//     });
-
-//     console.log("SQL Query:", baseSql);
-//     console.log("Params:", params);
-// });
-
-// GET: Obtener una píldora por ID
-router.get('/:id', (req, res) => {
-    const id = req.params.id;
-    const sql = `SELECT P.*, E.nombre as nombreEtiqueta, E.id as idEtiqueta
-                 FROM Pildora P 
-                 LEFT JOIN PildoraEtiqueta PE ON P.id = PE.idPildora 
-                 LEFT JOIN Etiqueta E ON PE.idEtiqueta = E.id 
-                 WHERE P.id = ?`;
-    db.all(sql, [id], (err, rows: PildoraRow[]) => {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-
-        if (rows.length === 0) {
-            res.status(404).json({ "error": "Píldora no encontrada" });
-            return;
-        }
-
-        const pildora: PildoraConEtiquetas = rows.reduce((acc: PildoraConEtiquetas, row: PildoraRow) => {
-            if (!acc.etiquetas) acc.etiquetas = [];
-            if (row.idEtiqueta !== null && row.nombreEtiqueta !== null) {
-                acc.etiquetas.push({ id: row.idEtiqueta, nombre: row.nombreEtiqueta });
-            }
-            return acc;
-        }, {
-            id: rows[0].id,
-            titulo: rows[0].titulo,
-            contenido: rows[0].contenido,
-            idSecuencia: rows[0].idSecuencia || null,
-            pasoSecuencia: rows[0].pasoSecuencia || null,
-            etiquetas: []
+    try {
+        const pildoras = await prisma.pildora.findMany({
+            where,
+            skip: pageNumber * pageSize,
+            take: pageSize,
+            orderBy,
+            include: {
+                etiquetas: true, // Incluir las etiquetas en la respuesta para verificar el filtrado
+            },
         });
 
-        res.json(pildora);
-    });
-});
+        const totalPildoras = await prisma.pildora.count({
+            where,
+        });
 
-
-
-// POST: Crear una nueva píldora
-router.post('/', (req, res) => {
-    const { titulo, contenido, pasoSecuencia, idSecuencia } = req.body;
-    db.run('INSERT INTO Pildora (titulo, contenido, pasoSecuencia, idSecuencia) VALUES (?, ?, ?, ?)', [titulo, contenido, pasoSecuencia, idSecuencia], function (err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-        res.json({ "id": this.lastID });
-    });
-});
-
-// PUT: Actualizar una píldora
-router.put('/:id', (req, res) => {
-    const id = req.params.id;
-    const { titulo, contenido, pasoSecuencia, idSecuencia } = req.body;
-    db.run('UPDATE Pildora SET titulo = ?, contenido = ?, pasoSecuencia = ?, idSecuencia = ? WHERE id = ?', [titulo, contenido, pasoSecuencia, idSecuencia, id], function (err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-        res.json({ "message": "Éxito", "changes": this.changes });
-    });
-});
-
-// DELETE: Eliminar una píldora
-router.delete('/:id', (req, res) => {
-    const id = req.params.id;
-    db.run('DELETE FROM Pildora WHERE id = ?', id, function (err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
         res.json({
-            "message": "Eliminada", "changes":
-
-                this.changes
+            data: pildoras,
+            total: totalPildoras,
+            pageNumber,
+            pageSize,
         });
-    });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ error: (error as Error).message || 'Error al obtener las pildoras' });
+    }
+    // catch (error: unknown) {
+    //     if (error instanceof Error) {
+    //         console.error("Error completo:", error);
+    //         res.status(500).send({ error: error.message });
+    //     } else {
+    //         console.error("Error desconocido:", error);
+    //         res.status(500).send({ error: 'Error al obtener las píldoras' });
+    //     }
+    // }
 });
 
-// Añadir etiqueta a una píldora
-router.post('/:pildoraId/etiqueta/:etiquetaId', (req, res) => {
-    const { pildoraId, etiquetaId } = req.params;
-    db.run('INSERT INTO PildoraEtiqueta (idPildora, idEtiqueta) VALUES (?, ?)', [pildoraId, etiquetaId], function (err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-        res.json({ "success": true, "message": "Etiqueta añadida a la píldora" });
-    });
-});
-
-// Eliminar etiqueta de una píldora
-router.delete('/:pildoraId/etiqueta/:etiquetaId', (req, res) => {
-    const { pildoraId, etiquetaId } = req.params;
-
-    db.run('DELETE FROM PildoraEtiqueta WHERE idPildora = ? AND idEtiqueta = ?', [pildoraId, etiquetaId], function (err) {
-        if (err) {
-            res.status
-                (400).json({ "error": err.message });
-            return;
-        }
-        if (this.changes > 0) {
-            res.json({ "success": true, "message": "Etiqueta eliminada de la píldora" });
+router.get('/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const pildora = await prisma.pildora.findUnique({
+            where: { id: Number(id) },
+            include: { etiquetas: true }, // Incluir relaciones si es necesario
+        });
+        if (pildora) {
+            res.json(pildora);
         } else {
-            res.json({ "success": false, "message": "No se encontró la relación para eliminar" });
+            res.status(404).send({ message: 'Píldora no encontrada' });
         }
-    });
+    } catch (error) {
+        res.status(500).send({ error: 'Error al obtener la píldora' });
+    }
 });
+
+router.post('/', async (req, res) => {
+    const { titulo, contenido, pasoSecuencia, idSecuencia, etiquetas } = req.body;
+    try {
+      const nuevaPildora = await prisma.pildora.create({
+        data: {
+          titulo,
+          contenido,
+          pasoSecuencia,
+          idSecuencia,
+          // Para manejar relaciones, necesitarías ajustar según tu modelo
+        },
+      });
+      res.status(201).json(nuevaPildora);
+    } catch (error) {
+      res.status(500).send({ error: 'Error al crear la píldora' });
+    }
+  });
+
+  router.put('/:id', async (req, res) => {
+    const { id } = req.params;
+    const { titulo, contenido, pasoSecuencia, idSecuencia } = req.body;
+    try {
+      const pildoraActualizada = await prisma.pildora.update({
+        where: { id: Number(id) },
+        data: {
+          titulo,
+          contenido,
+          pasoSecuencia,
+          idSecuencia,
+          // Ajustar para relaciones si es necesario
+        },
+      });
+      res.json(pildoraActualizada);
+    } catch (error) {
+      res.status(500).send({ error: 'Error al actualizar la píldora' });
+    }
+  });
+  
+  router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+      await prisma.pildora.delete({
+        where: { id: Number(id) },
+      });
+      res.status(204).send(); // No Content
+    } catch (error) {
+      res.status(500).send({ error: 'Error al eliminar la píldora' });
+    }
+  });
+
+  router.post('/:pildoraId/etiqueta/:etiquetaId', async (req, res) => {
+    const { pildoraId, etiquetaId } = req.params;
+    try {
+      const pildora = await prisma.pildora.update({
+        where: { id: Number(pildoraId) },
+        data: {
+          etiquetas: {
+            connect: { id: Number(etiquetaId) }, // Conecta una etiqueta existente
+          },
+        },
+      });
+      res.json(pildora);
+    } catch (error) {
+      res.status(500).send({ error: 'Error al añadir la etiqueta a la píldora' });
+    }
+  });
+
+  router.delete('/:pildoraId/etiqueta/:etiquetaId', async (req, res) => {
+    const { pildoraId, etiquetaId } = req.params;
+    try {
+      const pildora = await prisma.pildora.update({
+        where: { id: Number(pildoraId) },
+        data: {
+          etiquetas: {
+            disconnect: { id: Number(etiquetaId) }, // Desconecta la etiqueta
+          },
+        },
+      });
+      res.json(pildora);
+    } catch (error) {
+      res.status(500).send({ error: 'Error al remover la etiqueta de la píldora' });
+    }
+  });
+  
+
 
 export default router;

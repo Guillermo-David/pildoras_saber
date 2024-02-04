@@ -1,11 +1,13 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-
-import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { PildoraListModule } from './features/pildora/pildora-list/pildora-list.module';
 import { HttpClientModule } from '@angular/common/http';
 import { PildoraDetailModule } from './features/pildora/pildora-detail/pildora-detail.module';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { AppRoutingModule } from './app-routing.module';
+import { MatPaginatorIntl } from '@angular/material/paginator';
+import { CustomPaginator } from './config/CustomPaginatorConfiguration';
 
 @NgModule({
   declarations: [
@@ -18,7 +20,10 @@ import { PildoraDetailModule } from './features/pildora/pildora-detail/pildora-d
     PildoraListModule,
     PildoraDetailModule,
   ],
-  providers: [],
+  providers: [
+    provideAnimationsAsync(),
+    { provide: MatPaginatorIntl, useValue: CustomPaginator() }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

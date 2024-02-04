@@ -1,129 +1,99 @@
-import * as express from 'express';
-import * as sqlite3 from 'sqlite3';
+import { Router, Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
 
-const router = express.Router();
-const db = new sqlite3.Database('./pildoras.db', sqlite3.OPEN_READWRITE, (err) => {
-    if (err) {
-        console.error(err.message);
-    }
-    console.log('Conectado a la base de datos de etiquetas.');
-});
+const prisma = new PrismaClient();
+const router = Router();
 
-// GET: Obtener todas las etiquetas
-router.get('/', (req, res) => {
-    const size = req.query['size'] ? parseInt(req.query['size'].toString()) : 10; // Default 10
-    const page = req.query['page'] ? parseInt(req.query['page'].toString()) : 0; // Default 0
-    const offset = page * size;
-    const orderBy = typeof req.query['sort'] === 'string' ? req.query['sort'] : 'id'; // Default 'id'
-    const orderDirection = req.query['order'] === 'DESC' ? 'DESC' : 'ASC'; // Default 'ASC'
-    const nombre = typeof req.query['nombre'] === 'string' ? req.query['nombre'] : null;
+// Obtener todas las etiquetas
+router.get('/', async (req: Request, res: Response) => {
+    // Leer los parámetros de paginación de la petición o usar valores predeterminados
+    const page: number = parseInt(req.query['page'] as string) || 0;
+    const pageSize: number = parseInt(req.query['pageSize'] as string) || 10;
 
-    let baseSql = `FROM Etiqueta E`;
-    const params: (string | number)[] = [];
-    if (nombre) {
-        baseSql += ` WHERE E.nombre LIKE ?`;
-        params.push(`%${nombre}%`);
-    }
+    try {
+        const skip: number = page * pageSize;
 
-    // Consulta para obtener el total de registros
-    let countSql = `SELECT COUNT(*) as total ${baseSql}`;
-    
-    // Primero, obtener el total de registros
-    db.get(countSql, params, (err, countResult: CountResult) => {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-        
-        const total = countResult.total;
-        let dataSql = `SELECT * ${baseSql}`;
-
-        if (size !== -1) {
-            const offset = page * size;
-            dataSql += ` ORDER BY ${orderBy} ${orderDirection} LIMIT ? OFFSET ?`;
-            params.push(size, offset);
-        } else {
-            dataSql += ` ORDER BY ${orderBy} ${orderDirection}`;
-        }
-
-        db.all(dataSql, params, (err, rows) => {
-            if (err) {
-                res.status(400).json({ "error": err.message });
-                return;
-            }
-
-            // Enviar la respuesta paginada
-            res.json({
-                content: rows,
-                pageable: size !== -1 ? {
-                    pageNumber: offset / size,
-                    pageSize: size,
-                    offset: offset,
-                    sort: { empty: false, sorted: true, unsorted: false },
-                    paged: true,
-                    unpaged: false
-                } : null,
-                last: size !== -1 ? (page + 1) * size >= total : true,
-                totalPages: size !== -1 ? Math.ceil(total / size) : 1,
-                size: size,
-                number: offset / size,
-                sort: { empty: false, sorted: true, unsorted: false },
-                first: size !== -1 ? page === 0 : true,
-                numberOfElements: rows.length,
-                empty: rows.length === 0
-            });
+        // Obtener las etiquetas con paginación
+        const etiquetas = await prisma.etiqueta.findMany({
+            take: pageSize,
+            skip: skip,
+            orderBy: {
+                nombre: 'asc', // Ordena las etiquetas alfabéticamente por nombre
+            },
         });
-    });
+
+        // Opcional: Obtener el total de registros para informar al cliente el total de páginas
+        const total = await prisma.etiqueta.count();
+
+        res.json({
+            data: etiquetas,
+            total: total,
+            page: page,
+            pageSize: pageSize,
+            totalPages: Math.ceil(total / pageSize)
+        });
+    } catch (error) {
+        res.status(500).send({ error: (error as Error).message || 'Error al obtener las etiquetas' });
+    }
 });
 
 
-// GET: Obtener una etiqueta por ID
-router.get('/:id', (req, res) => {
-    const id = req.params.id;
-    db.get('SELECT * FROM Etiqueta WHERE id = ?', [id], (err, row) => {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
+// Obtener una etiqueta por ID
+router.get('/:id', async (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+        const etiqueta = await prisma.etiqueta.findUnique({
+            where: { id: Number(id) },
+        });
+        if (etiqueta) {
+            res.json(etiqueta);
+        } else {
+            res.status(404).send({ error: 'Etiqueta no encontrada' });
         }
-        res.json(row);
-    });
+    } catch (error) {
+        res.status(500).send({ error: (error as Error).message || 'Error al obtener la etiqueta' });
+    }
 });
 
-// POST: Crear una nueva etiqueta
-router.post('/', (req, res) => {
+// Crear una nueva etiqueta
+router.post('/', async (req: Request, res: Response) => {
     const { nombre } = req.body;
-    db.run('INSERT INTO Etiqueta (nombre) VALUES (?)', [nombre], function(err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-        res.json({ "id": this.lastID });
-    });
+    try {
+        const nuevaEtiqueta = await prisma.etiqueta.create({
+            data: { nombre },
+        });
+        res.json(nuevaEtiqueta);
+    } catch (error) {
+        res.status(500).send({ error: (error as Error).message || 'Error al crear la etiqueta' });
+    }
 });
 
-// PUT: Actualizar una etiqueta
-router.put('/:id', (req, res) => {
-    const id = req.params.id;
+// Actualizar una etiqueta
+router.put('/:id', async (req: Request, res: Response) => {
+    const { id } = req.params;
     const { nombre } = req.body;
-    db.run('UPDATE Etiqueta SET nombre = ? WHERE id = ?', [nombre, id], function(err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-        res.json({ "message": "Éxito", "changes": this.changes });
-    });
+    try {
+        const etiquetaActualizada = await prisma.etiqueta.update({
+            where: { id: Number(id) },
+            data: { nombre },
+        });
+        res.json(etiquetaActualizada);
+    } catch (error) {
+        res.status(500).send({ error: (error as Error).message || 'Error al actualizar la etiqueta' });
+    }
 });
 
-// DELETE: Eliminar una etiqueta
-router.delete('/:id', (req, res) => {
-    const id = req.params.id;
-    db.run('DELETE FROM Etiqueta WHERE id = ?', id, function(err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-        res.json({ "message": "Eliminada", "changes": this.changes });
-    });
+// Eliminar una etiqueta
+router.delete('/:id', async (req: Request, res: Response) => {
+    const { id } = req.params;
+    try {
+        await prisma.etiqueta.delete({
+            where: { id: Number(id) },
+        });
+        res.status(204).send();
+    } catch (error) {
+        res.status(500).send({ error: (error as Error).message || 'Error al eliminar la etiqueta' });
+    }
 });
 
 export default router;

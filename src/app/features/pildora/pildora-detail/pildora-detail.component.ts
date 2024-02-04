@@ -46,10 +46,10 @@ export class PildoraDetailComponent {
   }
 
   getOtros() {
-    const etiquetas$ = this.http.get<PagedResponse>(`${Environment.apiUrl}/etiquetas?page=0&size=-1&sort=nombre&order=asc`);
+    const etiquetas$ = this.http.get<PagedResponse>(`${Environment.apiUrl}/etiquetas?page=0&size=-1&sortBy=nombre&sortOrder=asc`);
 
     forkJoin([etiquetas$]).subscribe((responses) => {
-      this.etiquetas = responses[0].content;
+      this.etiquetas = responses[0].data;
     });
   }
 }

@@ -1,15 +1,13 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { FormsModule } from '@angular/forms';
-import { MessageService } from 'primeng/api';
 import { PildoraDetailComponent } from './pildora-detail.component';
-import { ButtonModule } from 'primeng/button';
-import { InputTextareaModule } from 'primeng/inputtextarea';
-import { InputTextModule } from 'primeng/inputtext';
-import { MultiSelectModule } from 'primeng/multiselect';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
 
 @NgModule({
   declarations: [PildoraDetailComponent],
@@ -17,14 +15,13 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
   imports: [
     CommonModule,
     RouterModule,
-    BreadcrumbModule,
-    ButtonModule,
     FormsModule,
-    InputTextareaModule,
-    InputTextModule,
-    MultiSelectModule,
     BrowserAnimationsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule
   ],
-  providers: [MessageService],
+  providers: [],
 })
 export class PildoraDetailModule {}

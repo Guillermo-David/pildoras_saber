@@ -1,6 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 
-let db = new sqlite3.Database('./pildoras.db', (err: Error | null) => {
+let db = new sqlite3.Database('./prisma/pildoras.db', (err: Error | null) => {
     if (err) {
         console.error(err.message);
     } else {

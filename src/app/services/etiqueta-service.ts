@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Etiqueta } from '../models/etiqueta';
-import { PagedResponse } from '../interfaces/paged-response';
 
 @Injectable({
   providedIn: 'root'
@@ -10,36 +9,35 @@ import { PagedResponse } from '../interfaces/paged-response';
 export class EtiquetaService {
     private apiUrl = 'http://localhost:3000/api/etiquetas';
 
-  constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient) { }
 
-  getEtiquetas(page: number, size: number, sort: string, order: string, filters: { [key: string]: string }): Observable<PagedResponse> {
-    let params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString())
-      .set('sort', sort)
-      .set('order', order);
-
-    // Aplicar los filtros activos
-    Object.keys(filters).forEach(key => {
-      params = params.set(key, filters[key]);
-    });
-
-    return this.http.get<PagedResponse>(this.apiUrl, { params });
-  }
+    getEtiquetas(page: number = 0, pageSize: number = 10): Observable<{data: Etiqueta[], total: number, page: number, pageSize: number, totalPages: number}> {
+      // Crear los parámetros de la petición basados en la paginación
+      let params = new HttpParams()
+        .set('page', page.toString())
+        .set('pageSize', pageSize.toString());
   
-  getEtiqueta(id: number): Observable<Etiqueta> {
-    return this.http.get<Etiqueta>(`${this.apiUrl}/${id}`);
-  }
+      // Incluir los parámetros en la solicitud HTTP
+      return this.http.get<{data: Etiqueta[], total: number, page: number, pageSize: number, totalPages: number}>(this.apiUrl, { params });
+    }
 
-  createEtiqueta(etiqueta: Etiqueta): Observable<Etiqueta> {
-    return this.http.post<Etiqueta>(this.apiUrl, etiqueta);
-  }
+    // Obtener una etiqueta por ID
+    getEtiqueta(id: number): Observable<Etiqueta> {
+        return this.http.get<Etiqueta>(`${this.apiUrl}/${id}`);
+    }
 
-  updateEtiqueta(etiqueta: Etiqueta): Observable<Etiqueta> {
-    return this.http.put<Etiqueta>(`${this.apiUrl}/${etiqueta.id}`, etiqueta);
-  }
+    // Crear una nueva etiqueta
+    createEtiqueta(etiqueta: Etiqueta): Observable<Etiqueta> {
+        return this.http.post<Etiqueta>(this.apiUrl, etiqueta);
+    }
 
-  deleteEtiqueta(id: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/${id}`);
-  }
+    // Actualizar una etiqueta existente
+    updateEtiqueta(etiqueta: Etiqueta): Observable<Etiqueta> {
+        return this.http.put<Etiqueta>(`${this.apiUrl}/${etiqueta.id}`, etiqueta);
+    }
+
+    // Eliminar una etiqueta
+    deleteEtiqueta(id: number): Observable<any> {
+        return this.http.delete<any>(`${this.apiUrl}/${id}`);
+    }
 }

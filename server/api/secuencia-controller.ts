@@ -2,7 +2,7 @@ import * as express from 'express';
 import * as sqlite3 from 'sqlite3';
 
 const router = express.Router();
-const db = new sqlite3.Database('./pildoras.db', sqlite3.OPEN_READWRITE, (err) => {
+const db = new sqlite3.Database('./prisma/pildoras.db', sqlite3.OPEN_READWRITE, (err) => {
     if (err) {
         console.error(err.message);
     }
