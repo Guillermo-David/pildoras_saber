@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 const router = express.Router();
 
 router.get('/', async (req, res) => {
-    const { page, size, sortBy, sortOrder, titulo, contenido, nombreEtiqueta } = req.query;
+    const { page, size, sortBy, sortOrder, titulo, contenido, etiqueta } = req.query;
 
     // Parsear parámetros de paginación
     const pageNumber = parseInt(page as string) || 0;
@@ -23,13 +23,13 @@ router.get('/', async (req, res) => {
     };
 
     // Filtrar por nombre de etiqueta, si se proporciona
-    if (nombreEtiqueta) {
+    if (etiqueta) {
         where = {
             ...where,
             etiquetas: {
                 some: {
                     nombre: {
-                        contains: nombreEtiqueta as string,
+                        contains: etiqueta as string,
                     },
                 },
             },

@@ -1,4 +1,3 @@
-
 :root {
     --color-primary-0: #DFBFC8;
     --color-primary-1: #BDB1B5;
@@ -25,5 +24,28 @@ th input {
 button {
     height: 40px;
 }
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+mat-paginator {
+    text-align: center;
+    margin: 0 auto;
+    display: flex !important;
+    justify-content: center;
+}
+
+mat-form-field {
+    margin-top: 15px;
+}
+
+.mdc-text-field--no-label {
+    height: 50px;
+}

@@ -19,42 +19,37 @@
 
         <!-- Tabla Angular Material -->
         <div class="mat-elevation-z8">
-            <table mat-table [dataSource]="pildoras" class="mat-elevation-z8">
+            <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)"
+                class="mat-elevation-z8">
 
                 <!-- Definiciones de Columnas -->
                 <ng-container matColumnDef="titulo">
-                    <th mat-header-cell *matHeaderCellDef> Titulo
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Titulo
                         <mat-form-field appearance="fill">
-                            <!-- <mat-label>Filtrar por título</mat-label> -->
-                            <input matInput (keyup)="onKeyup($event)">
+                            <input matInput [(ngModel)]="filtroTitulo" (keyup)="applyFilter()">
                         </mat-form-field>
                     </th>
                     <td mat-cell *matCellDef="let element"> {{element.titulo}} </td>
                 </ng-container>
 
                 <ng-container matColumnDef="contenido">
-                    <th mat-header-cell *matHeaderCellDef> Contenido </th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Contenido </th>
                     <td mat-cell *matCellDef="let element"> {{element.contenido}} </td>
                 </ng-container>
 
                 <ng-container matColumnDef="pasoSecuencia">
-                    <th mat-header-cell *matHeaderCellDef> Paso Secuencia </th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Paso Secuencia </th>
                     <td mat-cell *matCellDef="let element"> {{element.pasoSecuencia}} </td>
                 </ng-container>
-                
-                <!-- <ng-container matColumnDef="idSecuencia">
-                    <th mat-header-cell *matHeaderCellDef> ID Secuencia </th>
-                    <td mat-cell *matCellDef="let element"> {{element.idSecuencia}} </td>
-                </ng-container> -->
-                
+
                 <ng-container matColumnDef="etiquetas">
-                    <th mat-header-cell *matHeaderCellDef> Etiqueta
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Etiqueta
                         <mat-form-field appearance="fill">
-                            <!-- <mat-label>Filtrar por etiqueta</mat-label> -->
-                            <mat-select (selectionChange)="onFilter($event.value, 'etiquetas')">
-                                <mat-option *ngFor="let etiqueta of etiquetas" [value]="etiqueta.nombre">
-                                    {{etiqueta.nombre}}
-                                </mat-option>
+                            <mat-label>Etiqueta</mat-label>
+                            <mat-select [(ngModel)]="selectedEtiqueta" (selectionChange)="applyFilter()">
+                                <mat-option [value]="''"></mat-option>
+                                <mat-option *ngFor="let etiqueta of etiquetas"
+                                    [value]="etiqueta.nombre">{{etiqueta.nombre}}</mat-option>
                             </mat-select>
                         </mat-form-field>
                     </th>
@@ -67,8 +62,9 @@
                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                 <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             </table>
-
-            <mat-paginator [pageSizeOptions]="[10, 50, 100]" (itemsPerPageLabel)='itemsPerPageLabel' showFirstLastButtons></mat-paginator>
+            <mat-paginator [pageSizeOptions]="[10, 50, 100]" hideFirstLastButtons></mat-paginator>
+            <!-- <mat-paginator *ngIf="dataSource.data.length > 0" [pageSizeOptions]="[10, 50, 100]"
+                hideFirstLastButtons></mat-paginator> -->
         </div>
     </div>
 </mat-card>
