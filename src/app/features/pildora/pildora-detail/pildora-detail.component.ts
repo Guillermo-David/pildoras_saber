@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, ViewChild } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Environment } from 'src/app/environment/environment';
 import { PagedResponse } from 'src/app/interfaces/paged-response';
@@ -9,9 +9,9 @@ import { forkJoin } from 'rxjs';
 @Component({
   selector: 'app-pildora-detail',
   templateUrl: './pildora-detail.component.html',
-  styleUrls: ['./pildora-detail.component.css']
+  styleUrls: ['./pildora-detail.component.css'],
 })
-export class PildoraDetailComponent {
+export class PildoraDetailComponent implements AfterViewInit {
 
   pildoraForm!: FormGroup;
   etiquetas: Etiqueta[] = [];
@@ -22,20 +22,31 @@ export class PildoraDetailComponent {
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient) { }
-
-  ngOnInit(): void {
-    this.getOtros();
+    private http: HttpClient) {
     this.pildoraForm = this.fb.group({
       titulo: ['', Validators.required],
       etiqueta: [null, Validators.required],
       contenido: ['', Validators.required]
     });
+  }
+
+  ngOnInit(): void {
+
+    this.pildoraForm = this.fb.group({
+      titulo: ['', Validators.required],
+      etiquetas: [[], null],
+      contenido: ['', Validators.required]
+    });
+    this.getOtros();
 
     // Cargar las etiquetas para el dropdown aquí
     this.etiquetas = [
       // ... tus etiquetas
     ];
+  }
+
+  ngAfterViewInit(): void {
+    
   }
 
   onSubmit() {

@@ -1,19 +1,19 @@
-<!-- <form [formGroup]="pildoraForm" (ngSubmit)="onSubmit()"> -->
-<div>
+<form [formGroup]="pildoraForm" (ngSubmit)="onSubmit()">
     <!-- Campo de texto para el título -->
-    <mat-form-field appearance="fill">
+    <mat-form-field appearance="outline" class="form-titulo">
         <mat-label>Título</mat-label>
-        <input matInput type="text" id="titulo" [(ngModel)]="newPildoraTitulo" placeholder="Introduce el título">
+        <input matInput type="text" formControlName="titulo" placeholder="Introduce el título">
     </mat-form-field>
 
     <!-- Dropdown para seleccionar etiqueta -->
-    <mat-form-field appearance="fill">
+    <mat-form-field appearance="outline" class="form-etiqueta">
         <mat-label>Etiqueta</mat-label>
-        <mat-select [multiple]="true" [(ngModel)]="newPildoraEtiquetas">
+        <mat-select multiple formControlName="etiquetas">
             <mat-select-trigger>
-                {{newPildoraEtiquetas.length > 0 ? newPildoraEtiquetas[0] : ''}}
-                <span *ngIf="newPildoraEtiquetas.length > 1" class="example-additional-selection">
-                    (+{{newPildoraEtiquetas.length - 1}} {{newPildoraEtiquetas.length === 2 ? 'otra' : 'otras'}})
+                {{pildoraForm.value.etiquetas.length > 0 ? pildoraForm.value.etiquetas[0] : ''}}
+                <span *ngIf="pildoraForm.value.etiquetas.length > 1" class="example-additional-selection">
+                    (+{{pildoraForm.value.etiquetas.length - 1}} {{pildoraForm.value.etiquetas.length === 2 ? 'otra' :
+                    'otras'}})
                 </span>
             </mat-select-trigger>
             <mat-option *ngFor="let etiqueta of etiquetas" [value]="etiqueta.nombre">
@@ -22,34 +22,12 @@
         </mat-select>
     </mat-form-field>
 
-    <!-- Área de texto para el contenido -->
-    <mat-form-field appearance="fill">
+    <mat-form-field appearance="outline" class="form-contenido">
         <mat-label>Contenido</mat-label>
-        <textarea matInput id="contenido" [(ngModel)]="newPildoraContenido" rows="5"></textarea>
+        <textarea matInput formControlName="contenido"></textarea>
     </mat-form-field>
+    <markdown [data]="pildoraForm.get('contenido')!.value" class="form-contenido-preview"></markdown>
 
     <!-- Botón para guardar -->
-    <button mat-raised-button color="primary" type="submit">Guardar</button>
-</div>
-
-<!-- </form> -->
-
-<!-- <div>
-
-        <div class="p-field">
-            <label for="titulo">Título</label>
-            <input pInputText type="text" id="titulo" [(ngModel)]="newPildoraTitulo" placeholder="Introduce el título" />
-        </div>
-
-        <div class="p-field">
-            <label for="etiqueta">Etiqueta</label>
-            <p-multiSelect class="p-component" [options]="etiquetas" [(ngModel)]="newPildoraEtiquetas" optionLabel="nombre" display="chip" defaultLabel="Selecciona tipos"></p-multiSelect>
-        </div>
-
-        <div class="p-field">
-            <label for="contenido">Contenido</label>
-            <textarea pInputTextArea type="text" id="contenido" [(ngModel)]="newPildoraContenido" rows="25"></textarea>
-        </div>
-
-        <p-button type="submit" label="Guardar"></p-button>
-    </div> -->
+    <button mat-raised-button color="primary" type="submit" class="form-button">Guardar</button>
+</form>

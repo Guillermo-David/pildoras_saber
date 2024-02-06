@@ -10,6 +10,7 @@ import { EtiquetaService } from 'src/app/services/etiqueta-service';
 import { Observable, forkJoin, map } from 'rxjs';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatSelectChange } from '@angular/material/select';
 
 
 @Component({
@@ -61,31 +62,57 @@ export class PildoraListComponent {
     this.dataSource = new MatTableDataSource();
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
-    this.cargarDatos();
+    // this.cargarDatos();
+    this.cargarEtiquetas();
   }
 
-  cargarDatos() {
-    forkJoin({
-      pildoras: this.getPildoras(this.paging.page, this.paging.size),
-      etiquetas: this.getEtiquetas()
-    }).subscribe({
-      next: ({ pildoras, etiquetas }) => {
-        this.pildoras = pildoras.data;
-        this.etiquetas = etiquetas.data;
-        this.dataSource.data = pildoras.data;
+  // cargarDatos() {
+  //   forkJoin({
+  //     pildoras: this.getPildoras(this.paging.page, this.paging.size),
+  //     etiquetas: this.getEtiquetas()
+  //   }).subscribe({
+  //     next: ({ pildoras, etiquetas }) => {
+  //       this.pildoras = pildoras.data;
+  //       this.etiquetas = etiquetas.data;
+  //       this.dataSource.data = pildoras.data;
 
+  //       if (this.paginator) {
+  //         this.paginator.length = pildoras.total;
+  //         this.paginator.pageIndex = this.paging.page;
+  //         this.paginator.pageSize = this.paging.size;
+  //       }
+  //     },
+  //     error: (error) => {
+  //       console.error('Error al obtener píldoras o etiquetas', error);
+  //     },
+  //     complete: () => {
+  //       console.log('Operación de obtención de píldoras y etiquetas completada');
+  //     }
+  //   });
+  // }
+
+  actualizarDatos(): void {
+    const paginaActual = this.paginator ? this.paginator.pageIndex : 0;
+    const tamanoPagina = this.paginator ? this.paginator.pageSize : 10;
+  
+    this.pildoraService.getPildoras(paginaActual, tamanoPagina, this.currentSortField, this.currentSortOrder, this.activeFilters).subscribe({
+      next: (resultados) => {
+        this.dataSource.data = resultados.data;
         if (this.paginator) {
-          this.paginator.length = pildoras.total;
-          this.paginator.pageIndex = this.paging.page;
-          this.paginator.pageSize = this.paging.size;
+          this.paginator.length = resultados.total;
+          this.cdr.detectChanges();
         }
       },
-      error: (error) => {
-        console.error('Error al obtener píldoras o etiquetas', error);
+      error: (error) => console.error('Error al obtener datos de píldoras:', error),
+    });
+  }
+
+  cargarEtiquetas(): void {
+    this.etiquetaService.getEtiquetas().subscribe({
+      next: (etiquetas) => {
+        this.etiquetas = etiquetas.data;
       },
-      complete: () => {
-        console.log('Operación de obtención de píldoras y etiquetas completada');
-      }
+      error: (error) => console.error('Error al obtener etiquetas', error),
     });
   }
 
@@ -107,117 +134,123 @@ export class PildoraListComponent {
     return this.etiquetaService.getEtiquetas(0, Number.MAX_SAFE_INTEGER);
   }
 
-  onKeyup(event: Event) {
+  onKeyup(event: MatSelectChange) {
     // const target = event.target as HTMLInputElement;
     this.applyFilter();
   }
 
+  // Asume que tienes un método que se llama cuando cambia la selección del mat-select
+onEtiquetaSelected(event: MatSelectChange): void {
+  const etiquetaSeleccionada = event.value;
+  // Actualiza el filtro basado en la etiqueta seleccionada
+  this.activeFilters['etiqueta'] = etiquetaSeleccionada;
+
+  // Llama a cargarDatosFiltrados para aplicar el filtro
+  this.actualizarDatos();
+}
+
 
   applyFilter() {
-    // Usa directamente las propiedades del componente en lugar de intentar acceder a elementos del DOM.
     const filtroTitulo = this.filtroTitulo.trim().toLowerCase();
     const filtroEtiqueta = this.selectedEtiqueta;
-  
+
     this.activeFilters = {
       titulo: filtroTitulo,
       etiqueta: filtroEtiqueta,
     };
-  
-    this.cargarDatosFiltrados();
+
+    this.actualizarDatos();
   }
-  
 
+  // cargarDatosFiltrados(): void {
+  //   const paginaActual = this.paginator.pageIndex;
+  //   const tamanoPagina = this.paginator.pageSize;
 
+  //   this.pildoraService.getPildoras(paginaActual, tamanoPagina, this.currentSortField, this.currentSortOrder, this.activeFilters).subscribe({
+  //     next: (resultados) => {
+  //       this.dataSource.data = resultados.data;
+  //       // Actualiza el paginador dentro de una zona segura para garantizar la detección de cambios.
+  //       this.cdr.detectChanges();
+  //       setTimeout(() => {
+  //         this.paginator.length = resultados.total;
+  //       });
+  //     },
+  //     error: (error) => console.error('Error al obtener datos filtrados:', error),
+  //     complete: () => console.log('Carga de datos filtrados completada.')
+  //   });
+  // }
 
-cargarDatosFiltrados(): void {
-  const paginaActual = this.paginator.pageIndex;
-  const tamanoPagina = this.paginator.pageSize;
-
-  this.pildoraService.getPildoras(paginaActual, tamanoPagina, this.currentSortField, this.currentSortOrder, this.activeFilters).subscribe({
-    next: (resultados) => {
-      this.dataSource.data = resultados.data;
-      // Actualiza el paginador dentro de una zona segura para garantizar la detección de cambios.
-      this.cdr.detectChanges();
-      setTimeout(() => {
-        this.paginator.length = resultados.total;
-      });
-    },
-    error: (error) => console.error('Error al obtener datos filtrados:', error),
-    complete: () => console.log('Carga de datos filtrados completada.')
-  });
-}
-
-clearFilters() {
-  this.activeFilters = {};
-  this.paging.page = 0;
-  this.getPildoras(this.paging.page, this.paging.size);
-
-  if (this.filtroTitulo || this.selectedEtiqueta) {
-    this.filtroTitulo = '';
-    this.selectedEtiqueta = '';
-  }
-}
-
-// resetFiltersValue() {
-//   return {
-//     titulo: '',
-//     contenido: '',
-//     etiquetas: '',
-//   };
-// }
-
-onSortChange(e: any) {
-  console.log(e);
-}
-
-onSort(event: any) {
-  const sortOrderString = event.sortOrder === 1 ? 'asc' : 'desc'; // 1 para 'asc', -1 para 'desc'
-  if (event.sortField && event.sortOrder && (event.sortField !== this.currentSortField || sortOrderString !== this.currentSortOrder)) {
-    this.currentSortField = event.sortField as string;
-    this.currentSortOrder = sortOrderString;
-    this.paging.firstIndex = 0;
+  clearFilters() {
+    this.activeFilters = {};
     this.paging.page = 0;
     this.getPildoras(this.paging.page, this.paging.size);
+
+    if (this.filtroTitulo || this.selectedEtiqueta) {
+      this.filtroTitulo = '';
+      this.selectedEtiqueta = '';
+    }
   }
-}
 
-displayEtiquetas(etiquetas: Etiqueta[]): string {
-  return etiquetas.map((etiqueta) => etiqueta.nombre).join(', ');
-}
+  // resetFiltersValue() {
+  //   return {
+  //     titulo: '',
+  //     contenido: '',
+  //     etiquetas: '',
+  //   };
+  // }
 
-onPageChange(event: any) {
-  this.paging.firstIndex = event.first;
-  this.paging.page = event.first / event.rows;
-  this.paging.size = event.rows;
-  this.getPildoras(this.paging.page, this.paging.size);
-}
+  onSortChange(e: any) {
+    console.log(e);
+  }
 
-onNewRowInit() {
-  this.router.navigateByUrl('/edicion');
-}
+  onSort(event: any) {
+    const sortOrderString = event.sortOrder === 1 ? 'asc' : 'desc'; // 1 para 'asc', -1 para 'desc'
+    if (event.sortField && event.sortOrder && (event.sortField !== this.currentSortField || sortOrderString !== this.currentSortOrder)) {
+      this.currentSortField = event.sortField as string;
+      this.currentSortOrder = sortOrderString;
+      this.paging.firstIndex = 0;
+      this.paging.page = 0;
+      this.getPildoras(this.paging.page, this.paging.size);
+    }
+  }
 
-ngAfterViewInit() {
-  this.dataSource.paginator = this.paginator;
-  this.dataSource.sort = this.sort;
-  this.cdr.detectChanges(); // Asegura que los cambios se detecten antes de la suscripción.
+  displayEtiquetas(etiquetas: Etiqueta[]): string {
+    return etiquetas.map((etiqueta) => etiqueta.nombre).join(', ');
+  }
 
-  this.paginator.page.subscribe(() => {
-    // Actualiza los parámetros de paginación basándose en el estado actual del paginador.
-    this.paging.page = this.paginator.pageIndex;
-    this.paging.size = this.paginator.pageSize;
+  onPageChange(event: any) {
+    this.paging.firstIndex = event.first;
+    this.paging.page = event.first / event.rows;
+    this.paging.size = event.rows;
+    this.getPildoras(this.paging.page, this.paging.size);
+  }
 
-    // Llama a cargarDatosFiltrados para reflejar la paginación y los filtros actuales.
-    this.cargarDatosFiltrados();
-  });
+  onNewRowInit() {
+    this.router.navigateByUrl('/edicion');
+  }
 
-  this.sort.sortChange.subscribe((sortState: Sort) => {
-    this.currentSortField = sortState.active;
-    this.currentSortOrder = sortState.direction;
-    this.cargarDatos();
-  });
+  ngAfterViewInit() {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+    this.cdr.detectChanges(); // Asegura que los cambios se detecten antes de la suscripción.
 
-  // Inicializa la carga de datos aquí si es necesario, 
-  // pero asegúrate de que no interfiera con las actualizaciones del paginador.
-}
-  
+    this.paginator.page.subscribe(() => {
+      // Actualiza los parámetros de paginación basándose en el estado actual del paginador.
+      this.actualizarDatos();
+      this.paging.page = this.paginator.pageIndex;
+      this.paging.size = this.paginator.pageSize;
+
+      // Llama a cargarDatosFiltrados para reflejar la paginación y los filtros actuales.
+      // this.cargarDatosFiltrados();
+    });
+
+    this.sort.sortChange.subscribe((sortState: Sort) => {
+      this.currentSortField = sortState.active;
+      this.currentSortOrder = sortState.direction;
+      this.actualizarDatos();
+    });
+
+    this.actualizarDatos();
+  }
+
 }

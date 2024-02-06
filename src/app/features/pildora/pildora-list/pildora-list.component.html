@@ -27,6 +27,11 @@
                     <th mat-header-cell *matHeaderCellDef mat-sort-header> Titulo
                         <mat-form-field appearance="fill">
                             <input matInput [(ngModel)]="filtroTitulo" (keyup)="applyFilter()">
+                            @if (filtroTitulo) {
+                                <button matSuffix mat-icon-button aria-label="Clear" (click)="filtroTitulo=''">
+                                  <mat-icon>close</mat-icon>
+                                </button>
+                              }
                         </mat-form-field>
                     </th>
                     <td mat-cell *matCellDef="let element"> {{element.titulo}} </td>
@@ -43,11 +48,11 @@
                 </ng-container>
 
                 <ng-container matColumnDef="etiquetas">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Etiqueta
+                    <th mat-header-cell *matHeaderCellDef> Etiqueta
                         <mat-form-field appearance="fill">
                             <mat-label>Etiqueta</mat-label>
                             <mat-select [(ngModel)]="selectedEtiqueta" (selectionChange)="applyFilter()">
-                                <mat-option [value]="''"></mat-option>
+                                <mat-option [value]="''">Ninguna</mat-option>
                                 <mat-option *ngFor="let etiqueta of etiquetas"
                                     [value]="etiqueta.nombre">{{etiqueta.nombre}}</mat-option>
                             </mat-select>
