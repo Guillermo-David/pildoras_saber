@@ -89,6 +89,8 @@ export class PildoraListComponent {
         this.dataSource.data = resultados.data;
         if (this.paginator) {
           this.paginator.length = resultados.total;
+          this.paginator.pageIndex = resultados.pageNumber;
+          this.paginator.pageSize = resultados.pageSize;
           this.cdr.detectChanges();
         }
       },
@@ -105,18 +107,18 @@ export class PildoraListComponent {
     });
   }
 
-  getPildoras(page: number, size: number): Observable<{ data: Pildora[]; total: number; }> {
-    return this.pildoraService.getPildoras(page, size, this.currentSortField, this.currentSortOrder, this.activeFilters).pipe(
-      map(response => {
-        if (this.paginator) {
-          this.paginator.length = response.total;
-          this.paginator.pageIndex = page;
-          this.paginator.pageSize = size;
-        }
-        return { data: response.data, total: response.total };
-      })
-    );
-  }
+  // getPildoras(page: number, size: number): Observable<{ data: Pildora[]; total: number; }> {
+  //   return this.pildoraService.getPildoras(page, size, this.currentSortField, this.currentSortOrder, this.activeFilters).pipe(
+  //     map(response => {
+  //       if (this.paginator) {
+  //         this.paginator.length = response.total;
+  //         this.paginator.pageIndex = page;
+  //         this.paginator.pageSize = size;
+  //       }
+  //       return { data: response.data, total: response.total };
+  //     })
+  //   );
+  // }
 
   getEtiquetas(): Observable<{ data: Etiqueta[] }> {
     return this.etiquetaService.getEtiquetas(0, Number.MAX_SAFE_INTEGER);
@@ -163,7 +165,7 @@ export class PildoraListComponent {
 
   clearFilters() {
     this.activeFilters = {};
-    this.paging.page = 0;
+    this.paging.pageNumber = 0;
     this.actualizarDatos();
 
     if (this.filtroTitulo || this.selectedEtiqueta || this.filtroContenido) {
@@ -183,8 +185,9 @@ export class PildoraListComponent {
       this.currentSortField = event.sortField as string;
       this.currentSortOrder = sortOrderString;
       this.paging.firstIndex = 0;
-      this.paging.page = 0;
-      this.getPildoras(this.paging.page, this.paging.size);
+      this.paging.pageNumber = 0;
+      // this.getPildoras(this.paging.pageNumber, this.paging.pageSize);
+      this.actualizarDatos();
     }
   }
 
@@ -192,30 +195,20 @@ export class PildoraListComponent {
     return etiquetas.map((etiqueta) => etiqueta.nombre).join(', ');
   }
 
-  onPageChange(event: any) {
-    this.paging.firstIndex = event.first;
-    this.paging.page = event.first / event.rows;
-    this.paging.size = event.rows;
-    this.getPildoras(this.paging.page, this.paging.size);
-  }
-
   onNewRowInit() {
     this.router.navigateByUrl('/edicion');
   }
 
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-    this.cdr.detectChanges(); // Asegura que los cambios se detecten antes de la suscripción.
+    // this.dataSource.paginator = this.paginator;
+    // this.dataSource.sort = this.sort;
 
     this.paginator.page.subscribe(() => {
-      // Actualiza los parámetros de paginación basándose en el estado actual del paginador.
-      this.actualizarDatos();
-      this.paging.page = this.paginator.pageIndex;
-      this.paging.size = this.paginator.pageSize;
+      this.paging.pageNumber = this.paginator.pageIndex;
+      this.paging.pageSize = this.paginator.pageSize;
 
-      // Llama a cargarDatosFiltrados para reflejar la paginación y los filtros actuales.
-      // this.cargarDatosFiltrados();
+      this.actualizarDatos();
+      // this.cdr.detectChanges();
     });
 
     this.sort.sortChange.subscribe((sortState: Sort) => {
@@ -225,6 +218,7 @@ export class PildoraListComponent {
     });
 
     this.actualizarDatos();
+    // this.cdr.detectChanges();
   }
 
   editarPildora(pildora: any) {
