@@ -1,24 +1,38 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { Etiqueta } from '../models/etiqueta';
+import { PagedResponse } from '../interfaces/paged-response';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class EtiquetaService {
     private apiUrl = 'http://localhost:3000/api/etiquetas';
 
     constructor(private http: HttpClient) { }
 
-    getEtiquetas(page: number = 0, pageSize: number = 10): Observable<{data: Etiqueta[], total: number, page: number, pageSize: number, totalPages: number}> {
-      // Crear los parámetros de la petición basados en la paginación
-      let params = new HttpParams()
-        .set('page', page.toString())
-        .set('pageSize', pageSize.toString());
-  
-      // Incluir los parámetros en la solicitud HTTP
-      return this.http.get<{data: Etiqueta[], total: number, page: number, pageSize: number, totalPages: number}>(this.apiUrl, { params });
+    getEtiquetas(page: number = 0, pageSize: number = 10, activeFilters: { [key: string]: string } = {}): Observable<PagedResponse> {
+        let params = new HttpParams()
+            .set('page', page.toString())
+            .set('pageSize', pageSize.toString());
+
+        // Aplicar filtros activos a los parámetros de la petición
+        Object.keys(activeFilters).forEach(key => {
+            if (activeFilters[key]) {
+                params = params.set(key, activeFilters[key]);
+            }
+        });
+
+        return this.http.get<PagedResponse>(this.apiUrl, { params }).pipe(
+            map(response => {
+                const transformedData = response.data.map(etiqueta => new Etiqueta(etiqueta.id, etiqueta.nombre));
+                return {
+                    ...response,
+                    data: transformedData
+                };
+            })
+        );
     }
 
     // Obtener una etiqueta por ID

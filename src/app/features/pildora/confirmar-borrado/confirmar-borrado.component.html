@@ -1,0 +1,8 @@
+<h2 mat-dialog-title>Confirmar Borrado</h2>
+<div mat-dialog-content>
+    <p>¿Estás seguro de que quieres borrar el registro "{{data.titulo}}"?</p>
+</div>
+<div mat-dialog-actions>
+    <button mat-button (click)="cerrarDialogo()">Cancelar</button>
+    <button mat-button color="warn" (click)="confirmarBorrado()">Borrar</button>
+</div>

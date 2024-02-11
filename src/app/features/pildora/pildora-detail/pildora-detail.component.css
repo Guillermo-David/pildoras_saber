@@ -1,0 +1,72 @@
+form {
+    padding: 15px 0 0 25px;
+    /* width: 640px; */
+    border: 1px solid red;
+    display: grid;
+    /* margin: 50px 0 0 50px; */
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: 100px 500px 1fr;
+    grid-template-areas:
+        "ti et"
+        "co cp"
+        "si bu";
+    /* "si" es un espacio que me reservo para el botón siguiente */
+}
+
+.form-titulo {
+    grid-area: ti;
+}
+
+.form-etiqueta {
+    grid-area: et;
+}
+
+.form-contenido {
+    grid-area: co;
+    display: flex;
+    flex-direction: column;
+}
+
+textarea {
+    flex: 1;
+    /* Hace que el textarea llene el contenedor */
+    resize: vertical;
+    /* Limita el redimensionamiento a vertical */
+    overflow: auto;
+    /* Asegura que el desbordamiento de contenido sea manejable */
+}
+
+.form-contenido-preview {
+    border: 1px solid #a4a4a4;
+    border-radius: 6px;
+    grid-area: cp;
+    padding: 0 10px;
+    margin: 15px 25px 15px 0;
+    margin-bottom: 20px;
+}
+
+.form-buttons {
+    grid-area: bu;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 15px;
+}
+
+.form-button-limpiar {
+    /* width: 100px; */
+}
+
+.form-button-guardar,
+.form-button-cancelar {
+    /* width: 100px; */
+    margin-left: 15px;
+}
+
+form>* {
+    margin-right: 25px;
+}
+
+textarea {
+    resize: both;
+}

@@ -1,0 +1,14 @@
+form {
+    display: flex;
+    flex-direction: column;
+    padding: 25px;
+}
+
+input {
+    width: 100%;
+}
+
+.actions {
+    display: flex;
+    justify-content: space-between;
+}

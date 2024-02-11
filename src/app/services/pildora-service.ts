@@ -11,7 +11,7 @@ import { map } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class PildoraService {
-    private apiUrl = 'http://localhost:3000/api/pildoras';
+  private apiUrl = 'http://localhost:3000/api/pildoras';
 
   constructor(private http: HttpClient) { }
 
@@ -28,13 +28,13 @@ export class PildoraService {
 
     return this.http.get<PagedResponse>(this.apiUrl, { params }).pipe(
       map(response => {
-        const transformedContent = response.data.map(pildora => ({
+        const transformedData = response.data.map(pildora => ({
           ...pildora,
           etiquetas: pildora.etiquetas.map((etiqueta: any) => new Etiqueta(etiqueta.id, etiqueta.nombre))
         }));
         return {
           ...response,
-          content: transformedContent
+          content: transformedData
         };
       })
     );
@@ -59,7 +59,7 @@ export class PildoraService {
   addEtiquetaToPildora(pildoraId: number, etiquetaId: number): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/${pildoraId}/etiqueta/${etiquetaId}`, {});
   }
-  
+
   removeEtiquetaFromPildora(pildoraId: number, etiquetaId: number): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/${pildoraId}/etiqueta/${etiquetaId}`);
   }

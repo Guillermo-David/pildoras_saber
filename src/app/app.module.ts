@@ -8,6 +8,9 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { AppRoutingModule } from './app-routing.module';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 import { CustomPaginator } from './config/CustomPaginatorConfiguration';
+import { CrearEtiquetaModule } from './features/crear-etiqueta/crear-etiqueta.module';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
   declarations: [
@@ -19,6 +22,9 @@ import { CustomPaginator } from './config/CustomPaginatorConfiguration';
     HttpClientModule,
     PildoraListModule,
     PildoraDetailModule,
+    CrearEtiquetaModule,
+    MatSnackBarModule,
+    MatDialogModule,
   ],
   providers: [
     provideAnimationsAsync(),

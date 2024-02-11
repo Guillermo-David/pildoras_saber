@@ -5,35 +5,42 @@ const prisma = new PrismaClient();
 const router = Router();
 
 // Obtener todas las etiquetas
-router.get('/', async (req: Request, res: Response) => {
-    // Leer los parámetros de paginación de la petición o usar valores predeterminados
-    const page: number = parseInt(req.query['page'] as string) || 0;
+router.get('/', async (req, res) => {
+    const pageNumber: number = parseInt(req.query['page'] as string) || 0;
     const pageSize: number = parseInt(req.query['pageSize'] as string) || 10;
+    const nombre: string | undefined = req.query['nombre'] as string | undefined;
+
+    // Construir el objeto de condiciones where basado en si se proporcionó el nombre
+    let where = {};
+    if (nombre) {
+        where = {
+            nombre: {
+                contains: nombre,
+            },
+        };
+    }
 
     try {
-        const skip: number = page * pageSize;
-
-        // Obtener las etiquetas con paginación
         const etiquetas = await prisma.etiqueta.findMany({
+            where,
+            skip: pageNumber * pageSize,
             take: pageSize,
-            skip: skip,
             orderBy: {
-                nombre: 'asc', // Ordena las etiquetas alfabéticamente por nombre
+                nombre: 'asc',
             },
         });
 
-        // Opcional: Obtener el total de registros para informar al cliente el total de páginas
-        const total = await prisma.etiqueta.count();
+        const totalEtiquetas = await prisma.etiqueta.count({ where });
 
         res.json({
             data: etiquetas,
-            total: total,
-            page: page,
-            pageSize: pageSize,
-            totalPages: Math.ceil(total / pageSize)
+            total: totalEtiquetas,
+            pageNumber,
+            pageSize,
         });
     } catch (error) {
-        res.status(500).send({ error: (error as Error).message || 'Error al obtener las etiquetas' });
+        console.error(error);
+        res.status(500).send({ error: 'Error al obtener las etiquetas' });
     }
 });
 

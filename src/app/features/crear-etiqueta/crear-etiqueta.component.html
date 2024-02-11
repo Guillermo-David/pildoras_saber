@@ -1,0 +1,13 @@
+<form [formGroup]="etiquetaForm" (ngSubmit)="guardar()">
+    <mat-form-field appearance="fill">
+        <mat-label>Nombre de la etiqueta</mat-label>
+        <input matInput formControlName="nombre">
+        <mat-error *ngIf="etiquetaForm.get('nombre')?.errors?.['required']">
+            El nombre es obligatorio.
+        </mat-error>
+    </mat-form-field>
+    <div class="actions">
+        <button mat-button type="button" (click)="cancelar()">Cancelar</button>
+        <button mat-button color="primary" type="submit" [disabled]="!etiquetaForm.valid">Guardar</button>
+    </div>
+</form>

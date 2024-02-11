@@ -9,6 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MarkdownModule } from 'ngx-markdown';
+import { MatIconModule } from '@angular/material/icon';
 
 @NgModule({
   declarations: [PildoraDetailComponent],
@@ -23,8 +24,9 @@ import { MarkdownModule } from 'ngx-markdown';
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
-    MarkdownModule.forRoot()
+    MarkdownModule.forRoot(),
+    MatIconModule
   ],
   providers: [],
 })
-export class PildoraDetailModule {}
+export class PildoraDetailModule { }

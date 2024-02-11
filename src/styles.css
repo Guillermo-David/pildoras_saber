@@ -11,89 +11,38 @@ body {
     width: 1400px;
 }
 
-form {
-    padding: 0 25px;
-    /* width: 640px; */
-    border: 1px solid red;
-    display: grid;
-    margin: 50px 0 0 50px;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: 100px 500px 100px;
-    grid-template-areas: 
-        "ti et"
-        "co cp"
-        "bu bu";
-}
 
-.form-titulo {
-    grid-area: ti;
-}
-.form-etiqueta {
-    grid-area: et;    
-}
-.form-contenido {
-    grid-area: co;
+
+
+/* label {
     display: flex;
-    flex-direction: column;
-}
-textarea {
-    flex: 1; /* Hace que el textarea llene el contenedor */
-    resize: vertical; /* Limita el redimensionamiento a vertical */
-    overflow: auto; /* Asegura que el desbordamiento de contenido sea manejable */
-}
-.form-contenido-preview {
-    border: 1px solid black;
-    grid-area: cp;
-    padding: 0 10px;
-    margin: 15px;
-    margin-bottom: 20px;
-    /* display: flex;
-    flex-direction: column; */
-}
-.form-button {
-    margin: 0 auto;
-    width: 100px;
-    grid-area: bu;
-    align-self: center;
-}
-
-
-
-form > * {
-    margin-right: 25px;
-}
-
-label {
-    display: flex;
-    /* border: 1px solid var(--color-primary-2); */
-    /* border-radius: 5px; */
-    width: 100px;
-    height: 40px;
     align-items: center;
     padding-left: 8px;
     margin-right: 5px;
-}
+} */
 
-th input {
+/* th input {
     margin-left: 8px;
-}
+} */
 
-th mat-form-field {
+/* th mat-form-field {
     margin-left: 8px;
-}
+} */
 
 button {
     height: 40px;
 }
 
-html,
+/* html,
 body {
     height: 100%;
-}
+} */
 
 body {
     margin: 0;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
+    padding: 0;
+    /* font-family: Roboto, "Helvetica Neue", sans-serif; */
+    /* border: 1px dotted red; */
 }
 
 mat-paginator {
@@ -112,13 +61,34 @@ mat-form-field {
 }
 
 table {
-    /* display:flex; */
     width: 100%;
 }
+
 .mat-column-titulo {
     width: 25%;
 }
+
 .mat-column-contenido {
-    width: 35%;
+    width: 40%;
 }
-textarea { resize: both;}
+
+.mat-column-acciones {
+    width: 1%;
+}
+
+.mat-column-acciones * {
+    margin: 0;
+    padding: 0;
+}
+
+/* .mat-column-etiquetas mat-form-field {
+   width: 100%;
+} */
+
+mat-card-header {
+    justify-content: center;
+}
+
+mat-card-title {
+    padding-bottom: 15px;
+}

@@ -7,10 +7,15 @@ import { PildoraService } from 'src/app/services/pildora-service';
 import { Etiqueta } from 'src/app/models/etiqueta';
 import { MatPaginator } from '@angular/material/paginator';
 import { EtiquetaService } from 'src/app/services/etiqueta-service';
-import { Observable, forkJoin, map } from 'rxjs';
+import { Observable, map, debounceTime, Subject } from 'rxjs';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSelectChange } from '@angular/material/select';
+import { ConfirmarBorradoComponent } from '../confirmar-borrado/confirmar-borrado.component';
+import { MatDialog } from '@angular/material/dialog';
+import { ToastService } from 'src/app/services/toast-service';
+import { CommonUtils } from 'src/app/common/common-utils';
+import { PildoraDataService } from 'src/app/services/pildora-data-service';
 
 
 @Component({
@@ -21,80 +26,66 @@ import { MatSelectChange } from '@angular/material/select';
 export class PildoraListComponent {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
-  //
   @ViewChild('saveButtonEdit') saveButtonEdit!: ElementRef;
   @ViewChild('saveButtonNew') saveButtonNew!: ElementRef;
-  // @ViewChild('filtroTitulo') filtroTitulo!: ElementRef;
-  // @ViewChild('filtroContenido') filtroContenido!: ElementRef;
-  // @ViewChild('filtroEtiqueta') filtroEtiqueta!: ElementRef;
 
   pildoras: Pildora[] = [];
   etiquetas: Etiqueta[] = [];
   dataSource = new MatTableDataSource<Pildora>();
 
-  displayedColumns: string[] = ['titulo', 'contenido', 'pasoSecuencia', 'etiquetas'];
-
-
+  displayedColumns: string[] = ['titulo', 'contenido', 'etiquetas', 'acciones'];
 
   //Paginacion, ordenacion y filtrado
   paging: Pagination = new Pagination();
   currentSortField: string = 'titulo';
   currentSortOrder: string = 'asc';
   itemsPerPageLabel: string = "Resultados por página";
-  // filters = {
-  //   titulo: '',
-  //   etiqueta: '';
-  // }
   activeFilters: { [key: string]: string } = {};
   selectedEtiqueta: string = '';
+  filtroTituloSubject = new Subject<string>();
+  filtroContenidoSubject = new Subject<string>();
   filtroTitulo: string = '';
-  // textoInputsFiltros: { [key: string]: any } = {};
-  // opcionesFiltroBoolean = CommonUtils.OPCIONES_FILTRO_SI_NO;
+  filtroContenido: string = '';
 
   constructor(
     private pildoraService: PildoraService,
     private etiquetaService: EtiquetaService,
     private http: HttpClient,
     private router: Router,
-    private cdr: ChangeDetectorRef) { }
+    private cdr: ChangeDetectorRef,
+    public dialog: MatDialog,
+    private toastService: ToastService,
+    private pildoraDataService: PildoraDataService
+  ) {
+    this.filtroTituloSubject.pipe(
+      debounceTime(CommonUtils.DEBOUNCE_DELAY)
+    ).subscribe({
+      next: (valor) => {
+        this.filtroTitulo = valor;
+        this.applyFilter();
+      }
+    });
+    this.filtroContenidoSubject.pipe(
+      debounceTime(CommonUtils.DEBOUNCE_DELAY)
+    ).subscribe({
+      next: (valor) => {
+        this.filtroContenido = valor;
+        this.applyFilter();
+      }
+    });
+  }
 
   ngOnInit() {
     this.dataSource = new MatTableDataSource();
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
-    // this.cargarDatos();
     this.cargarEtiquetas();
   }
-
-  // cargarDatos() {
-  //   forkJoin({
-  //     pildoras: this.getPildoras(this.paging.page, this.paging.size),
-  //     etiquetas: this.getEtiquetas()
-  //   }).subscribe({
-  //     next: ({ pildoras, etiquetas }) => {
-  //       this.pildoras = pildoras.data;
-  //       this.etiquetas = etiquetas.data;
-  //       this.dataSource.data = pildoras.data;
-
-  //       if (this.paginator) {
-  //         this.paginator.length = pildoras.total;
-  //         this.paginator.pageIndex = this.paging.page;
-  //         this.paginator.pageSize = this.paging.size;
-  //       }
-  //     },
-  //     error: (error) => {
-  //       console.error('Error al obtener píldoras o etiquetas', error);
-  //     },
-  //     complete: () => {
-  //       console.log('Operación de obtención de píldoras y etiquetas completada');
-  //     }
-  //   });
-  // }
 
   actualizarDatos(): void {
     const paginaActual = this.paginator ? this.paginator.pageIndex : 0;
     const tamanoPagina = this.paginator ? this.paginator.pageSize : 10;
-  
+
     this.pildoraService.getPildoras(paginaActual, tamanoPagina, this.currentSortField, this.currentSortOrder, this.activeFilters).subscribe({
       next: (resultados) => {
         this.dataSource.data = resultados.data;
@@ -115,7 +106,6 @@ export class PildoraListComponent {
       error: (error) => console.error('Error al obtener etiquetas', error),
     });
   }
-
 
   getPildoras(page: number, size: number): Observable<{ data: Pildora[]; total: number; }> {
     return this.pildoraService.getPildoras(page, size, this.currentSortField, this.currentSortOrder, this.activeFilters).pipe(
@@ -139,65 +129,51 @@ export class PildoraListComponent {
     this.applyFilter();
   }
 
-  // Asume que tienes un método que se llama cuando cambia la selección del mat-select
-onEtiquetaSelected(event: MatSelectChange): void {
-  const etiquetaSeleccionada = event.value;
-  // Actualiza el filtro basado en la etiqueta seleccionada
-  this.activeFilters['etiqueta'] = etiquetaSeleccionada;
+  onFiltroTituloChanged(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.filtroTituloSubject.next(target.value);
+  }
 
-  // Llama a cargarDatosFiltrados para aplicar el filtro
-  this.actualizarDatos();
-}
+  onFiltroContenidoChanged(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.filtroContenidoSubject.next(target.value);
+  }
 
+  // Asume que hay un método que se llama cuando cambia la selección del mat-select
+  onEtiquetaSelected(event: MatSelectChange): void {
+    const etiquetaSeleccionada = event.value;
+    // Actualiza el filtro basado en la etiqueta seleccionada
+    this.activeFilters['etiqueta'] = etiquetaSeleccionada;
+
+    // Llama a cargarDatosFiltrados para aplicar el filtro
+    this.actualizarDatos();
+  }
 
   applyFilter() {
     const filtroTitulo = this.filtroTitulo.trim().toLowerCase();
-    const filtroEtiqueta = this.selectedEtiqueta;
+    const filtroContenido = this.filtroContenido.trim().toLowerCase();
+    const filtroEtiqueta = !!this.selectedEtiqueta ? this.selectedEtiqueta : '';
 
     this.activeFilters = {
       titulo: filtroTitulo,
+      contenido: filtroContenido,
       etiqueta: filtroEtiqueta,
     };
 
     this.actualizarDatos();
   }
 
-  // cargarDatosFiltrados(): void {
-  //   const paginaActual = this.paginator.pageIndex;
-  //   const tamanoPagina = this.paginator.pageSize;
-
-  //   this.pildoraService.getPildoras(paginaActual, tamanoPagina, this.currentSortField, this.currentSortOrder, this.activeFilters).subscribe({
-  //     next: (resultados) => {
-  //       this.dataSource.data = resultados.data;
-  //       // Actualiza el paginador dentro de una zona segura para garantizar la detección de cambios.
-  //       this.cdr.detectChanges();
-  //       setTimeout(() => {
-  //         this.paginator.length = resultados.total;
-  //       });
-  //     },
-  //     error: (error) => console.error('Error al obtener datos filtrados:', error),
-  //     complete: () => console.log('Carga de datos filtrados completada.')
-  //   });
-  // }
-
   clearFilters() {
     this.activeFilters = {};
     this.paging.page = 0;
     this.getPildoras(this.paging.page, this.paging.size);
 
-    if (this.filtroTitulo || this.selectedEtiqueta) {
+    if (this.filtroTitulo || this.selectedEtiqueta || this.filtroContenido) {
       this.filtroTitulo = '';
+      this.filtroContenido = '';
       this.selectedEtiqueta = '';
     }
   }
-
-  // resetFiltersValue() {
-  //   return {
-  //     titulo: '',
-  //     contenido: '',
-  //     etiquetas: '',
-  //   };
-  // }
 
   onSortChange(e: any) {
     console.log(e);
@@ -253,4 +229,29 @@ onEtiquetaSelected(event: MatSelectChange): void {
     this.actualizarDatos();
   }
 
+  editarPildora(pildora: any) {
+    this.pildoraDataService.cambiarPildora(pildora);
+    this.router.navigate(['/edicion']);
+  }
+
+  confirmarBorrarPildora(pildora: any) {
+    const dialogRef = this.dialog.open(ConfirmarBorradoComponent, {
+      width: '250px',
+      data: { titulo: pildora.titulo } // Pasa los datos necesarios
+    });
+
+    dialogRef.afterClosed().subscribe((result: any) => {
+      if (result) {
+        this.pildoraService.deletePildora(pildora.id).subscribe({
+          next: (response) => {
+            this.toastService.showToast('Píldora borrada con éxito');
+            this.actualizarDatos();
+          },
+          error: (error) => {
+            this.toastService.showToast('Error al borrar la píldora: ' + error);
+          }
+        });
+      }
+    });
+  }
 }

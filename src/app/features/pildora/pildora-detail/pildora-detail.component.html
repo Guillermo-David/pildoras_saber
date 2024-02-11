@@ -8,7 +8,7 @@
     <!-- Dropdown para seleccionar etiqueta -->
     <mat-form-field appearance="outline" class="form-etiqueta">
         <mat-label>Etiqueta</mat-label>
-        <mat-select multiple formControlName="etiquetas">
+        <mat-select multiple disableRipple formControlName="etiquetas">
             <mat-select-trigger>
                 {{pildoraForm.value.etiquetas.length > 0 ? pildoraForm.value.etiquetas[0] : ''}}
                 <span *ngIf="pildoraForm.value.etiquetas.length > 1" class="example-additional-selection">
@@ -16,7 +16,10 @@
                     'otras'}})
                 </span>
             </mat-select-trigger>
-            <mat-option *ngFor="let etiqueta of etiquetas" [value]="etiqueta.nombre">
+            <mat-option (click)="abrirModalCrearEtiqueta(); $event.preventDefault()" class="anadir-etiqueta">
+                <a>Añadir nueva...</a>
+            </mat-option>
+            <mat-option *ngFor="let etiqueta of etiquetas" [value]="etiqueta.id">
                 {{etiqueta.nombre}}
             </mat-option>
         </mat-select>
@@ -24,10 +27,18 @@
 
     <mat-form-field appearance="outline" class="form-contenido">
         <mat-label>Contenido</mat-label>
-        <textarea matInput formControlName="contenido"></textarea>
+        <textarea matInput cdkTextareaAutosize formControlName="contenido" cdkAutosizeMaxRows="25"></textarea>
+        <!-- <textarea matInput cdkTextareaAutosize formControlName="contenido" cdkAutosizeMinRows="10" cdkAutosizeMaxRows="50"></textarea> -->
     </mat-form-field>
     <markdown [data]="pildoraForm.get('contenido')!.value" class="form-contenido-preview"></markdown>
 
     <!-- Botón para guardar -->
-    <button mat-raised-button color="primary" type="submit" class="form-button">Guardar</button>
+    <div class="form-buttons">
+        <button mat-raised-button color="accent" (click)="resetFormulario(); $event.preventDefault()"
+            class="form-button-limpiar"><mat-icon>clear</mat-icon><span>Limpiar</span></button>
+        <button mat-raised-button color="accent" (click)="cancelarFormulario(); $event.preventDefault()"
+            class="form-button-cancelar"><mat-icon>cancel</mat-icon><span>Cancelar</span></button>
+        <button mat-raised-button color="primary" type="submit"
+            class="form-button-guardar"><mat-icon>save</mat-icon><span>Guardar</span></button>
+    </div>
 </form>
