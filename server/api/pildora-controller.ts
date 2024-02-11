@@ -24,14 +24,15 @@ router.get('/', async (req, res) => {
 
   // Filtrar por nombre de etiqueta, si se proporciona
   if (etiqueta) {
-    where = {
-      ...where,
-      etiquetas: {
-        some: {
+    const etiquetasArray = (etiqueta as string).split(',');
+
+    where.etiquetas = {
+      some: {
+        OR: etiquetasArray.map(nombreEtiqueta => ({
           nombre: {
-            contains: etiqueta as string,
+            contains: nombreEtiqueta,
           },
-        },
+        })),
       },
     };
   }

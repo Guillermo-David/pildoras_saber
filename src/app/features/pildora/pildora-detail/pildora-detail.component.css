@@ -1,5 +1,5 @@
 form {
-    padding: 15px 0 0 25px;
+    padding: 16px 0 0 26px;
     /* width: 640px; */
     border: 1px solid red;
     display: grid;
@@ -22,27 +22,53 @@ form {
 }
 
 .form-contenido {
-    grid-area: co;
     display: flex;
     flex-direction: column;
+    grid-area: contenido;
+    margin-top: 0;
+}
+
+::ng-deep .form-contenido-container .mat-mdc-form-field * {
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+}
+
+.editor-toolbar {
+    border: 1px solid #a4a4a4;
+    border-radius: 6px 6px 0 0;
+    grid-area: herramientas;
+    margin-bottom: 0;
+    padding: 5px;
+    background-color: #a4a4a4;
+}
+
+.form-contenido-container {
+    grid-area: co;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 48px 1fr;
+    grid-template-areas: "herramientas" "contenido";
+    margin-top: 5px;
 }
 
 textarea {
     flex: 1;
-    /* Hace que el textarea llene el contenedor */
     resize: vertical;
-    /* Limita el redimensionamiento a vertical */
     overflow: auto;
-    /* Asegura que el desbordamiento de contenido sea manejable */
 }
 
 .form-contenido-preview {
     border: 1px solid #a4a4a4;
     border-radius: 6px;
     grid-area: cp;
-    padding: 0 10px;
-    margin: 15px 25px 15px 0;
+    padding: 10px;
+    margin: 5px 26px 16px 0;
     margin-bottom: 20px;
+}
+
+.form-contenido {
+    /* margin-top: 25px; */
+    /* padding-top: 25px; */
 }
 
 .form-buttons {
@@ -50,7 +76,7 @@ textarea {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    padding-bottom: 15px;
+    padding-bottom: 16px;
 }
 
 .form-button-limpiar {
@@ -60,13 +86,30 @@ textarea {
 .form-button-guardar,
 .form-button-cancelar {
     /* width: 100px; */
-    margin-left: 15px;
+    margin-left: 10px;
 }
 
 form>* {
-    margin-right: 25px;
+    margin-right: 26px;
 }
 
 textarea {
     resize: both;
+}
+
+.mdc-button {
+    text-align: center;
+}
+
+.editor-toolbar .mdc-button {
+    min-width: 26px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    margin: 0 2px;
+}
+
+.editor-toolbar .mdc-button * {
+    padding: 0;
+    margin: 0;
 }

@@ -5,7 +5,7 @@ import { Pagination } from 'src/app/models/pagination';
 import { Pildora } from 'src/app/models/pildora';
 import { PildoraService } from 'src/app/services/pildora-service';
 import { Etiqueta } from 'src/app/models/etiqueta';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { EtiquetaService } from 'src/app/services/etiqueta-service';
 import { Observable, map, debounceTime, Subject } from 'rxjs';
 import { MatSort, Sort } from '@angular/material/sort';
@@ -27,6 +27,8 @@ export class PildoraListComponent {
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('saveButtonEdit') saveButtonEdit!: ElementRef;
   @ViewChild('saveButtonNew') saveButtonNew!: ElementRef;
+
+  // paginator: MatPaginator = new MatPaginator(new MatPaginatorIntl, this.cdr, undefined);
 
   pildoras: Pildora[] = [];
   etiquetas: Etiqueta[] = [];
@@ -75,8 +77,6 @@ export class PildoraListComponent {
 
   ngOnInit() {
     this.dataSource = new MatTableDataSource();
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
     this.cargarEtiquetas();
   }
 
@@ -164,7 +164,7 @@ export class PildoraListComponent {
   clearFilters() {
     this.activeFilters = {};
     this.paging.page = 0;
-    this.getPildoras(this.paging.page, this.paging.size);
+    this.actualizarDatos();
 
     if (this.filtroTitulo || this.selectedEtiqueta || this.filtroContenido) {
       this.filtroTitulo = '';

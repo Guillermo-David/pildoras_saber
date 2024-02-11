@@ -8,7 +8,8 @@
     <!-- Dropdown para seleccionar etiqueta -->
     <mat-form-field appearance="outline" class="form-etiqueta">
         <mat-label>Etiqueta</mat-label>
-        <mat-select [compareWith]="compararEtiquetas" multiple disableRipple formControlName="etiquetas">
+        <!-- <mat-select *ngIf="etiquetas && etiquetas.length > 0" formControlName="etiquetas" -->
+        <mat-select formControlName="etiquetas" [compareWith]="compararEtiquetas" multiple disableRipple>
             <mat-select-trigger>
                 {{pildoraForm.value.etiquetas.length > 0 ? pildoraForm.value.etiquetas[0] : ''}}
                 <span *ngIf="pildoraForm.value.etiquetas.length > 1" class="example-additional-selection">
@@ -25,20 +26,68 @@
         </mat-select>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="form-contenido">
-        <mat-label>Contenido</mat-label>
-        <textarea matInput cdkTextareaAutosize formControlName="contenido" cdkAutosizeMaxRows="25"></textarea>
-        <!-- <textarea matInput cdkTextareaAutosize formControlName="contenido" cdkAutosizeMinRows="10" cdkAutosizeMaxRows="50"></textarea> -->
-    </mat-form-field>
+
+
+
+
+
+    <div class="form-contenido-container">
+        <!-- <mat-label>Contenido</mat-label> -->
+        <!--    EDITOR TEXTAREA     -->
+        <div class="editor-toolbar">
+            <button mat-raised-button (click)="aplicarEstilo('**', '**')"><mat-icon
+                    class="material-symbols-outlined">format_bold</mat-icon></button>
+            <button mat-raised-button (click)=" aplicarEstilo('*', '*' )"><mat-icon
+                    class="material-symbols-outlined">format_italic</mat-icon></button>
+            <button mat-raised-button (click)="aplicarEstilo('~~', '~~')"><mat-icon
+                    class="material-symbols-outlined"><span class="material-symbols-outlined">
+                        format_strikethrough
+                    </span></mat-icon></button>
+
+            <button mat-raised-button (click)="aplicarEstilo('# ', '')"><mat-icon
+                    class="material-symbols-outlined">format_h1</mat-icon></button>
+            <button mat-raised-button (click)=" aplicarEstilo('## ', '')"><mat-icon
+                    class="material-symbols-outlined">format_h2</mat-icon></button>
+            <button mat-raised-button (click)="aplicarEstilo(' ### ', '')"><mat-icon
+                    class="material-symbols-outlined">format_h3</mat-icon></button>
+
+            <button mat-raised-button (click)="aplicarEstilo(' - ', '')"><mat-icon
+                    class="material-symbols-outlined">format_list_bulleted</mat-icon></button>
+            <button mat-raised-button (click)="aplicarEstilo(' 1. ', '')"><mat-icon
+                    class="material-symbols-outlined">format_list_numbered</mat-icon></button>
+
+            <button mat-raised-button (click)="insertarEnlace()"><mat-icon
+                    class="material-symbols-outlined">link</mat-icon></button>
+
+            <button mat-raised-button (click)="aplicarEstilo('> ', '')"><mat-icon
+                    class="material-symbols-outlined">chat</mat-icon></button>
+
+            <button mat-raised-button (click)="aplicarEstilo('`', '`')"><mat-icon
+                    class="material-symbols-outlined">code</mat-icon></button>
+            <button mat-raised-button (click)="aplicarEstilo('```javascript\n', '\n```')"><mat-icon
+                    class="material-symbols-outlined">code_blocks</mat-icon></button>
+
+            <button mat-raised-button (click)="aplicarEstilo('\n---\n', '')"><mat-icon
+                    class="material-symbols-outlined">horizontal_rule</mat-icon></button>
+        </div>
+        <mat-form-field appearance="outline" class="form-contenido">
+
+            <!--    FIN EDITOR TEXTAREA     -->
+            <textarea #editor matInput cdkTextareaAutosize formControlName="contenido" cdkAutosizeMaxRows="25"
+                (select)="actualizarPosicionSeleccion($event)" (keyup)="actualizarPosicionSeleccion($event)"></textarea>
+        </mat-form-field>
+    </div>
     <markdown [data]="pildoraForm.get('contenido')!.value" class="form-contenido-preview"></markdown>
 
     <!-- Botón para guardar -->
     <div class="form-buttons">
         <button mat-raised-button color="accent" (click)="resetFormulario(); $event.preventDefault()"
-            class="form-button-limpiar"><mat-icon>clear</mat-icon><span>Limpiar</span></button>
+            class="form-button-limpiar"><mat-icon class="material-symbols-outlined">clear
+            </mat-icon><span>Limpiar</span></button>
         <button mat-raised-button color="accent" (click)="cancelarFormulario(); $event.preventDefault()"
-            class="form-button-cancelar"><mat-icon>cancel</mat-icon><span>Cancelar</span></button>
-        <button mat-raised-button color="primary" type="submit"
-            class="form-button-guardar"><mat-icon>save</mat-icon><span>Guardar</span></button>
+            class="form-button-cancelar"><mat-icon class="material-symbols-outlined">cancel
+            </mat-icon><span>Cancelar</span></button>
+        <button mat-raised-button color="primary" type="submit" class="form-button-guardar"><mat-icon
+                class="material-symbols-outlined">save </mat-icon><span>Guardar</span></button>
     </div>
 </form>
