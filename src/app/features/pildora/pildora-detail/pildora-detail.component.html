@@ -8,7 +8,7 @@
     <!-- Dropdown para seleccionar etiqueta -->
     <mat-form-field appearance="outline" class="form-etiqueta">
         <mat-label>Etiqueta</mat-label>
-        <mat-select multiple disableRipple formControlName="etiquetas">
+        <mat-select [compareWith]="compararEtiquetas" multiple disableRipple formControlName="etiquetas">
             <mat-select-trigger>
                 {{pildoraForm.value.etiquetas.length > 0 ? pildoraForm.value.etiquetas[0] : ''}}
                 <span *ngIf="pildoraForm.value.etiquetas.length > 1" class="example-additional-selection">

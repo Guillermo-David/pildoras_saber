@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { Environment } from 'src/app/environment/environment';
 import { PagedResponse } from 'src/app/interfaces/paged-response';
 import { Etiqueta } from 'src/app/models/etiqueta';
@@ -8,8 +8,7 @@ import { forkJoin } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { CrearEtiquetaComponent } from '../../crear-etiqueta/crear-etiqueta.component';
 import { PildoraService } from 'src/app/services/pildora-service';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToastService } from 'src/app/services/toast-service';
 
 
@@ -33,11 +32,12 @@ export class PildoraDetailComponent implements OnInit, AfterViewInit {
     public dialog: MatDialog,
     private pildoraService: PildoraService,
     private router: Router,
-    private toastService: ToastService
+    private route: ActivatedRoute,
+    private toastService: ToastService,
   ) {
     this.pildoraForm = this.fb.group({
       titulo: ['', Validators.required],
-      etiqueta: [null, Validators.required],
+      etiquetas: this.fb.array([]),
       contenido: ['', Validators.required]
     });
   }
@@ -46,16 +46,53 @@ export class PildoraDetailComponent implements OnInit, AfterViewInit {
 
     this.pildoraForm = this.fb.group({
       titulo: ['', Validators.required],
-      etiquetas: [[], null],
+      etiquetas: this.fb.array([]),
       contenido: ['', Validators.required]
     });
+
     this.getOtros();
 
-    // Cargar las etiquetas para el dropdown aquí
-    this.etiquetas = [
-      // ... tus etiquetas
-    ];
+    this.route.paramMap.subscribe(params => {
+
+
+      const pildoraIdStr = params.get('id');
+      const pildoraId = pildoraIdStr ? +pildoraIdStr : 0; // 0 o cualquier valor por defecto
+
+      if (pildoraId > 0) {
+        // Cargar y rellenar el formulario con los datos de la píldora existente
+        this.pildoraService.getPildora(pildoraId).subscribe(pildora => {
+          this.pildoraForm.patchValue({
+            titulo: pildora.titulo,
+            contenido: pildora.contenido
+          });
+          const etiquetasFormArray = this.pildoraForm.get('etiquetas') as FormArray;
+          etiquetasFormArray.clear(); // Limpia cualquier valor existente
+
+          // etiquetasFormArray.setValue([1]);
+          // etiquetasFormArray.push(this.fb.control(1));
+          pildora.etiquetas.forEach(etiqueta => {
+            etiquetasFormArray.push(this.fb.control(etiqueta.id));
+          });
+        });
+      } else {
+        // Opcional: Preparar el formulario para una nueva píldora
+        this.pildoraForm.reset();
+        // O establecer valores predeterminados si es necesario
+        this.pildoraForm.patchValue({
+          titulo: '',
+          contenido: ''
+        });
+        // Asegúrate de que el FormArray para etiquetas esté vacío o configurado con valores predeterminados
+        const etiquetasFormArray = this.pildoraForm.get('etiquetas') as FormArray;
+        etiquetasFormArray.clear();
+      }
+    });
   }
+
+  compararEtiquetas(etiqueta1: any, etiqueta2: any): boolean {
+    return etiqueta1 && etiqueta2 ? etiqueta1.id === etiqueta2.id : etiqueta1 === etiqueta2;
+  }
+
 
   ngAfterViewInit(): void {
 
@@ -69,7 +106,6 @@ export class PildoraDetailComponent implements OnInit, AfterViewInit {
         titulo: formData.titulo,
         contenido: formData.contenido,
         etiquetas: formData.etiquetas
-        // etiquetas: formData.etiquetas.map((id: number) => ({ id }))
       };
 
       this.pildoraService.createPildora(pildoraData).subscribe({
@@ -85,7 +121,6 @@ export class PildoraDetailComponent implements OnInit, AfterViewInit {
       });
     }
   }
-
 
   getOtros() {
     const etiquetas$ = this.http.get<PagedResponse>(`${Environment.apiUrl}/etiquetas?page=0&size=-1&sortBy=nombre&sortOrder=asc`);

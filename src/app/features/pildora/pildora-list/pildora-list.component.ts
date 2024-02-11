@@ -15,7 +15,6 @@ import { ConfirmarBorradoComponent } from '../confirmar-borrado/confirmar-borrad
 import { MatDialog } from '@angular/material/dialog';
 import { ToastService } from 'src/app/services/toast-service';
 import { CommonUtils } from 'src/app/common/common-utils';
-import { PildoraDataService } from 'src/app/services/pildora-data-service';
 
 
 @Component({
@@ -55,7 +54,6 @@ export class PildoraListComponent {
     private cdr: ChangeDetectorRef,
     public dialog: MatDialog,
     private toastService: ToastService,
-    private pildoraDataService: PildoraDataService
   ) {
     this.filtroTituloSubject.pipe(
       debounceTime(CommonUtils.DEBOUNCE_DELAY)
@@ -230,8 +228,7 @@ export class PildoraListComponent {
   }
 
   editarPildora(pildora: any) {
-    this.pildoraDataService.cambiarPildora(pildora);
-    this.router.navigate(['/edicion']);
+    this.router.navigateByUrl("/edicion/" + pildora.id);
   }
 
   confirmarBorrarPildora(pildora: any) {

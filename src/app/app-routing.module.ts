@@ -6,6 +6,7 @@ import { PildoraDetailComponent } from './features/pildora/pildora-detail/pildor
 const routes: Routes = [
   { path: '', component: PildoraListComponent },
   { path: 'edicion', component: PildoraDetailComponent },
+  { path: 'edicion/:id', component: PildoraDetailComponent },
   { path: '**', redirectTo: '' }  // Esta siempre al final!
 ];
 
