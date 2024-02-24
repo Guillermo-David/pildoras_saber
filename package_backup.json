@@ -10,6 +10,9 @@
     "start": "concurrently \"ng serve\" \"npm run start-server\"",
     "build-server": "tsc --project ./",
     "start-server": "npm run build-server && node ./dist/server/server.js",
+    "start-server-0": "ts-node ./server/server.ts",
+    "start-server-2": "node --loader ts-node/esm ./server/server.ts",
+    "start-server-3": "ts-node --esm ./server/server.ts",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
@@ -17,7 +20,7 @@
     "electron-build": "tsc && ng build && electron .",
     "winpack": "electron-packager ./ pildoras --platform-win32 --overwrite",
     "init-db": "ts-node ./server/init-db.ts",
-    "dist": "electron-builder"
+    "dist": "tsc && ng build && electron-builder"
   },
   "private": true,
   "dependencies": {

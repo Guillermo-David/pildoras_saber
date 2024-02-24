@@ -1,4 +1,5 @@
-const sqlite3 = require('sqlite3').verbose();
+// const sqlite3 = require('sqlite3').verbose();
+import sqlite3 from 'sqlite3';
 
 let db = new sqlite3.Database('./prisma/pildoras.db', (err: Error | null) => {
     if (err) {
@@ -14,7 +15,7 @@ db.serialize(() => {
     db.run(`DROP TABLE IF EXISTS Etiqueta`);
     db.run(`DROP TABLE IF EXISTS Secuencia`);
     db.run(`DROP TABLE IF EXISTS Pildora`);
-    
+
     // Crear tabla Secuencia
     db.run(`CREATE TABLE IF NOT EXISTS Secuencia (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
